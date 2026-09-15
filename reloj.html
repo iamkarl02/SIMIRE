@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reloj</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: #fafafa;
+            color: #222;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* ---------- Barra superior (idéntica al resto) ---------- */
+        .topbar {
+            display: flex;
+            gap: 4px;
+            background: #fff;
+            border: 1px solid #ececec;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 50px;
+            flex-shrink: 0;
+        }
+
+        .topbar a {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 0;
+            font-size: 0.82rem;
+            color: #777;
+            border-radius: 6px;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .topbar a:hover { color: #000; background: #f5f5f5; }
+        .topbar a.activo { background: #222; color: #fff; }
+
+        /* ---------- Reloj ---------- */
+        .reloj-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 28px;
+            padding-bottom: 60px;
+        }
+
+        .hora {
+            font-size: clamp(6rem, 22vw, 18rem);
+            font-weight: 200;
+            letter-spacing: -0.055em;
+            color: #111;
+            font-variant-numeric: tabular-nums;
+            line-height: 0.95;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.05em;
+        }
+
+        .hora .segundos {
+            font-size: 0.42em;
+            color: #b0b0b0;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+
+        .fecha {
+            font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+            color: #555;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            text-transform: capitalize;
+        }
+
+        .ubicacion {
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            color: #999;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 1.4em;
+        }
+
+        .ubicacion .punto {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #bbb;
+            flex-shrink: 0;
+        }
+
+        .ubicacion.local .punto { background: #bbb; }
+        .ubicacion.detectada .punto { background: #4caf50; }
+
+        /* ---------- Aviso pequeño (permiso denegado) ---------- */
+        .aviso {
+            display: none;
+            font-size: 0.85rem;
+            color: #999;
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #ececec;
+            border-radius: 8px;
+        }
+
+        .aviso.visible { display: inline-block; }
+
+        /* ---------- Botón pantalla completa (centrado, grande) ---------- */
+        .btn-fullscreen {
+            margin-top: 20px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 18px 42px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-fullscreen:hover {
+            background: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+        }
+
+        .btn-fullscreen:active {
+            transform: translateY(0);
+        }
+
+        .btn-fullscreen svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* ---------- Modo pantalla completa ---------- */
+        body:fullscreen,
+        body:-webkit-full-screen {
+            background: #fafafa;
+            padding: 30px 20px;
+        }
+
+        body:fullscreen .topbar,
+        body:-webkit-full-screen .topbar {
+            display: none;
+        }
+
+        body:fullscreen .contenedor,
+        body:-webkit-full-screen .contenedor {
+            max-width: 100%;
+            min-height: 100vh;
+        }
+
+        body:fullscreen .reloj-wrapper,
+        body:-webkit-full-screen .reloj-wrapper {
+            padding-bottom: 0;
+        }
+
+        body:fullscreen .hora,
+        body:-webkit-full-screen .hora {
+            font-size: clamp(10rem, 28vw, 32rem);
+        }
+
+        body:fullscreen .fecha,
+        body:-webkit-full-screen .fecha {
+            font-size: clamp(2rem, 4.5vw, 3.5rem);
+        }
+
+        body:fullscreen .btn-fullscreen,
+        body:-webkit-full-screen .btn-fullscreen {
+            background: #fff;
+            color: #222;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        body:fullscreen .btn-fullscreen:hover,
+        body:-webkit-full-screen .btn-fullscreen:hover {
+            background: #f5f5f5;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 720px) {
+            body { padding: 24px 14px; }
+            .topbar { margin-bottom: 32px; }
+            .contenedor { min-height: calc(100vh - 48px); }
+            .reloj-wrapper { gap: 20px; padding-bottom: 40px; }
+            .btn-fullscreen {
+                padding: 15px 32px;
+                font-size: 0.95rem;
+                border-radius: 14px;
+            }
+            .btn-fullscreen svg { width: 18px; height: 18px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 16px 10px; }
+            .topbar { padding: 3px; margin-bottom: 24px; }
+            .topbar a { font-size: 0.68rem; padding: 7px 0; }
+            .contenedor { min-height: calc(100vh - 32px); }
+            .reloj-wrapper { gap: 14px; padding-bottom: 30px; }
+            .btn-fullscreen {
+                padding: 13px 26px;
+                font-size: 0.85rem;
+                border-radius: 12px;
+                gap: 8px;
+            }
+            .btn-fullscreen svg { width: 16px; height: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+
+        <nav class="topbar">
+            <a href="horario.html">Horario</a>
+            <a href="sitios.html">Sitios</a>
+            <a href="calendario.html">Calendario</a>
+            <a href="reloj.html" class="activo">Reloj</a>
+        </nav>
+
+        <div class="reloj-wrapper">
+            <div id="hora" class="hora">
+                00:00<span class="segundos">:00</span>
+            </div>
+
+            <div id="fecha" class="fecha"></div>
+
+            <div id="ubicacion" class="ubicacion local">
+                <span class="punto"></span>
+                <span id="ubicacionTexto">Hora local del dispositivo</span>
+            </div>
+
+            <div id="aviso" class="aviso"></div>
+
+            <button id="btnFullscreen" class="btn-fullscreen" title="Pantalla completa">
+                <svg id="iconoFull" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                    <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                    <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                </svg>
+                <span id="textoFull">Pantalla completa</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const horaEl = document.getElementById("hora");
+        const fechaEl = document.getElementById("fecha");
+        const ubicacionEl = document.getElementById("ubicacion");
+        const ubicacionTextoEl = document.getElementById("ubicacionTexto");
+        const avisoEl = document.getElementById("aviso");
+
+        const btnFullscreen = document.getElementById("btnFullscreen");
+        const iconoFull = document.getElementById("iconoFull");
+        const textoFull = document.getElementById("textoFull");
+
+        let zonaHoraria = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+        const meses = [
+            "enero", "febrero", "marzo", "abril", "mayo", "junio",
+            "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+        ];
+
+        // ------------------------------------------------------------
+        //  Reloj
+        // ------------------------------------------------------------
+        function actualizarReloj() {
+            const ahora = new Date();
+
+            const fmtHora = new Intl.DateTimeFormat("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+                timeZone: zonaHoraria
+            });
+
+            const partes = fmtHora.formatToParts(ahora);
+            let h = "00", m = "00", s = "00";
+            partes.forEach(p => {
+                if (p.type === "hour") h = p.value;
+                if (p.type === "minute") m = p.value;
+                if (p.type === "second") s = p.value;
+            });
+
+            horaEl.innerHTML = `${h}:${m}<span class="segundos">:${s}</span>`;
+
+            const fechaLocal = new Date(ahora.toLocaleString("en-US", { timeZone: zonaHoraria }));
+            const diaSemana = diasSemana[fechaLocal.getDay()];
+            const dia = fechaLocal.getDate();
+            const mes = meses[fechaLocal.getMonth()];
+            const año = fechaLocal.getFullYear();
+
+            fechaEl.textContent =
+                `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}, ${dia} de ${mes} de ${año}`;
+        }
+
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+
+        // ------------------------------------------------------------
+        //  Ubicación (opcional)
+        // ------------------------------------------------------------
+        function pedirUbicacion() {
+            if (!navigator.geolocation) {
+                mostrarAviso("Tu navegador no soporta geolocalización.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const { latitude, longitude } = pos.coords;
+
+                    try {
+                        const r = await fetch(
+                            `https://timeapi.io/api/TimeZone/coordinate?latitude=${latitude}&longitude=${longitude}`
+                        );
+                        if (r.ok) {
+                            const data = await r.json();
+                            if (data && data.timeZone) {
+                                zonaHoraria = data.timeZone;
+                                ubicacionTextoEl.textContent = zonaHoraria.replace(/_/g, " ");
+                                ubicacionEl.classList.remove("local");
+                                ubicacionEl.classList.add("detectada");
+                                actualizarReloj();
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("No se pudo obtener la zona horaria desde la API.");
+                    }
+
+                    ubicacionTextoEl.textContent = `Lat ${latitude.toFixed(2)}, Lon ${longitude.toFixed(2)}`;
+                    ubicacionEl.classList.remove("local");
+                    ubicacionEl.classList.add("detectada");
+                },
+                (err) => {
+                    if (err.code === 1) {
+                        mostrarAviso("Ubicación denegada · usando hora local");
+                    } else {
+                        mostrarAviso("No se pudo obtener la ubicación · usando hora local");
+                    }
+                },
+                { timeout: 10000, enableHighAccuracy: false }
+            );
+        }
+
+        function mostrarAviso(msg) {
+            avisoEl.textContent = msg;
+            avisoEl.classList.add("visible");
+        }
+
+        setTimeout(pedirUbicacion, 400);
+
+        // ------------------------------------------------------------
+        //  Pantalla completa
+        // ------------------------------------------------------------
+        const iconoExpandir = `
+            <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+            <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+        `;
+
+        const iconoContraer = `
+            <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+            <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+            <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+            <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+        `;
+
+        function actualizarIcono() {
+            const activo = document.fullscreenElement || document.webkitFullscreenElement;
+            iconoFull.innerHTML = activo ? iconoContraer : iconoExpandir;
+            textoFull.textContent = activo ? "Salir" : "Pantalla completa";
+        }
+
+        btnFullscreen.addEventListener("click", () => {
+            const activo = document.fullscreenElement || document.webkitFullscreenElement;
+
+            if (!activo) {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen();
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        });
+
+        document.addEventListener("fullscreenchange", actualizarIcono);
+        document.addEventListener("webkitfullscreenchange", actualizarIcono);
+
+        actualizarIcono();
+    </script>
+</body>
+</html>

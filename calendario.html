@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+        body {
+            background: #fafafa; color: #222; min-height: 100vh;
+            display: flex; justify-content: center; align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .contenedor { width: 100%; max-width: 1100px; }
+
+        /* ---------- Barra superior (idéntica al horario y sitios) ---------- */
+        .topbar {
+            display: flex;
+            gap: 4px;
+            background: #fff;
+            border: 1px solid #ececec;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 50px;
+        }
+
+        .topbar a {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 0;
+            font-size: 0.82rem;
+            color: #777;
+            border-radius: 6px;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .topbar a:hover { color: #000; background: #f5f5f5; }
+        .topbar a.activo { background: #222; color: #fff; }
+
+        /* ---------- Cabecera calendario ---------- */
+        header.cabecera {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 24px;
+        }
+
+        header.cabecera h1 {
+            font-size: 1.1rem; font-weight: 500;
+            text-transform: capitalize; letter-spacing: -0.02em;
+        }
+
+        .controles { display: flex; gap: 6px; }
+
+        .controles button {
+            background: transparent; color: #666;
+            border: 1px solid #e0e0e0; padding: 6px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+            transition: all 0.15s;
+        }
+
+        .controles button:hover { background: #f0f0f0; color: #000; }
+
+        .controles button.ver-todos {
+            background: #222; color: #fff; border-color: #222;
+        }
+
+        .controles button.ver-todos:hover { background: #000; }
+
+        .diasSemana {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 8px;
+        }
+
+        .diasSemana span {
+            text-align: center; font-size: 0.7rem; color: #999;
+            font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .calendario {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+        }
+
+        .dia {
+            min-height: 110px; padding: 6px; border-radius: 6px;
+            display: flex; flex-direction: column; gap: 3px;
+            background: #fff; border: 1px solid #f0f0f0; overflow: hidden;
+        }
+
+        .dia.otroMes { background: transparent; border-color: transparent; color: #ccc; }
+
+        .numeroDia { font-size: 0.75rem; color: #555; font-weight: 500; }
+        .dia.otroMes .numeroDia { color: #ccc; }
+        .dia.hoy .numeroDia { color: #000; font-weight: 700; }
+        .dia.hoy { border-color: #222; }
+
+        .evento {
+            font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;
+            color: #fff; cursor: pointer; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; transition: opacity 0.15s;
+        }
+        .evento:hover { opacity: 0.8; }
+
+        /* ---------- Vista "Ver todos" ---------- */
+        .vista-todos { display: none; }
+        .vista-todos.activa { display: block; }
+        .vista-calendario.oculto { display: none; }
+
+        .lista-todos { display: flex; flex-direction: column; gap: 8px; }
+
+        .item-evento {
+            background: #fff; border: 1px solid #f0f0f0;
+            border-radius: 8px; padding: 14px 16px;
+            display: flex; align-items: center; gap: 14px;
+            cursor: pointer; transition: border-color 0.15s;
+        }
+        .item-evento:hover { border-color: #ddd; }
+
+        .item-color {
+            width: 6px; height: 44px; border-radius: 3px; flex-shrink: 0;
+        }
+
+        .item-info { flex: 1; min-width: 0; }
+        .item-nombre {
+            font-size: 0.9rem; font-weight: 600; margin-bottom: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .item-desc {
+            font-size: 0.78rem; color: #666; margin-bottom: 3px;
+            line-height: 1.4;
+        }
+        .item-fecha { font-size: 0.72rem; color: #999; }
+
+        .item-hora {
+            font-size: 0.78rem; color: #444; font-weight: 600;
+            flex-shrink: 0; font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .vacio {
+            text-align: center; color: #bbb;
+            font-size: 0.85rem; padding: 40px 0;
+        }
+
+        /* ---------- Modal ---------- */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4); justify-content: center;
+            align-items: center; z-index: 100;
+        }
+        .modal.activo { display: flex; }
+
+        .modal-contenido {
+            background: #fff; padding: 28px; border-radius: 10px;
+            max-width: 400px; width: 90%; position: relative;
+        }
+        .modal-contenido h2 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+        .modal-contenido p {
+            font-size: 0.85rem; color: #666;
+            line-height: 1.5; margin-bottom: 6px;
+        }
+        .cerrar {
+            position: absolute; top: 12px; right: 16px;
+            font-size: 1.3rem; color: #999; cursor: pointer; line-height: 1;
+        }
+        .cerrar:hover { color: #000; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 720px) {
+            body { padding: 24px 14px; }
+            .topbar { margin-bottom: 32px; }
+            header.cabecera h1 { font-size: 0.95rem; }
+            .controles button { padding: 5px 10px; font-size: 0.72rem; }
+            .dia { min-height: 90px; }
+            .evento { font-size: 0.62rem; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 16px 10px; }
+            .topbar { padding: 3px; margin-bottom: 20px; }
+            .topbar a { font-size: 0.7rem; padding: 7px 0; }
+            .dia { min-height: 70px; padding: 4px; }
+            .numeroDia { font-size: 0.68rem; }
+            .evento { font-size: 0.58rem; padding: 1px 4px; }
+            .diasSemana span { font-size: 0.62rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+
+        <nav class="topbar">
+            <a href="horario.html">Horario</a>
+            <a href="sitios.html">Sitios</a>
+            <a href="calendario.html" class="activo">Calendario</a>
+            <a href="reloj.html">Reloj</a>
+        </nav>
+
+        <!-- Vista calendario -->
+        <section id="vistaCalendario" class="vista-calendario">
+            <header class="cabecera">
+                <h1 id="tituloMes"></h1>
+                <div class="controles">
+                    <button id="btnAnterior">←</button>
+                    <button id="btnHoy">hoy</button>
+                    <button id="btnSiguiente">→</button>
+                    <button id="btnVerTodos" class="ver-todos">Ver todos</button>
+                </div>
+            </header>
+
+            <div class="diasSemana">
+                <span>L</span><span>M</span><span>X</span>
+                <span>J</span><span>V</span><span>S</span><span>D</span>
+            </div>
+
+            <div id="calendario" class="calendario"></div>
+        </section>
+
+        <!-- Vista "Ver todos" -->
+        <section id="vistaTodos" class="vista-todos">
+            <header class="cabecera">
+                <h1>Todos los eventos</h1>
+                <div class="controles">
+                    <button id="btnVolver">← Volver al calendario</button>
+                </div>
+            </header>
+            <div id="listaTodos" class="lista-todos"></div>
+        </section>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar" id="cerrarModal">×</span>
+            <h2 id="modalTitulo"></h2>
+            <p id="modalFecha"></p>
+            <p id="modalDescripcion"></p>
+        </div>
+    </div>
+
+    <script>
+        const meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        let eventos = [];
+        let fechaActual = new Date();
+
+        const tituloMes = document.getElementById("tituloMes");
+        const contenedorCalendario = document.getElementById("calendario");
+        const btnAnterior = document.getElementById("btnAnterior");
+        const btnSiguiente = document.getElementById("btnSiguiente");
+        const btnHoy = document.getElementById("btnHoy");
+        const btnVerTodos = document.getElementById("btnVerTodos");
+        const btnVolver = document.getElementById("btnVolver");
+
+        const vistaCalendario = document.getElementById("vistaCalendario");
+        const vistaTodos = document.getElementById("vistaTodos");
+        const listaTodos = document.getElementById("listaTodos");
+
+        const modal = document.getElementById("modal");
+        const cerrarModal = document.getElementById("cerrarModal");
+        const modalTitulo = document.getElementById("modalTitulo");
+        const modalFecha = document.getElementById("modalFecha");
+        const modalDescripcion = document.getElementById("modalDescripcion");
+
+        async function cargarEventos() {
+            try {
+                const r = await fetch("fechas.txt");
+                if (!r.ok) throw new Error("No se pudo leer fechas.txt");
+                const texto = await r.text();
+
+                eventos = texto
+                    .split("\n")
+                    .map(l => l.trim())
+                    .filter(l => l && !l.startsWith("#"))
+                    .map(linea => {
+                        const match = linea.match(
+                            /^(\d{2}\/\d{2}\/\d{4})\s+(\S+)\s+(#\w+)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*(.*)$/
+                        );
+                        if (!match) return null;
+                        const [, fechaStr, nombre, color, horaIni, horaFin, desc] = match;
+                        const [dia, mes, año] = fechaStr.split("/").map(Number);
+                        return {
+                            fecha: `${año}-${String(mes).padStart(2,"0")}-${String(dia).padStart(2,"0")}`,
+                            dia, mes, año,
+                            nombre: nombre.replace(/_/g, " "),
+                            color, horaInicio: horaIni, horaFin: horaFin,
+                            descripcion: desc.trim() || "Sin descripción."
+                        };
+                    })
+                    .filter(Boolean);
+
+                renderizarCalendario();
+                renderizarListaTodos();
+            } catch (err) {
+                console.error("Error:", err);
+                renderizarCalendario();
+                renderizarListaTodos();
+            }
+        }
+
+        function formatearFecha(f) {
+            const y = f.getFullYear();
+            const m = String(f.getMonth() + 1).padStart(2, "0");
+            const d = String(f.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        }
+
+        function obtenerEventos(fecha) {
+            const clave = formatearFecha(fecha);
+            return eventos.filter(ev => ev.fecha === clave);
+        }
+
+        function renderizarCalendario() {
+            contenedorCalendario.innerHTML = "";
+
+            const año = fechaActual.getFullYear();
+            const mes = fechaActual.getMonth();
+            tituloMes.textContent = `${meses[mes]} ${año}`;
+
+            const primerDia = new Date(año, mes, 1);
+            let diaSemanaInicio = primerDia.getDay();
+            diaSemanaInicio = (diaSemanaInicio === 0) ? 6 : diaSemanaInicio - 1;
+
+            const ultimoDia = new Date(año, mes + 1, 0).getDate();
+            const diasMesAnterior = new Date(año, mes, 0).getDate();
+            const hoyStr = formatearFecha(new Date());
+
+            for (let i = diaSemanaInicio - 1; i >= 0; i--) {
+                const dia = diasMesAnterior - i;
+                const celda = document.createElement("div");
+                celda.classList.add("dia", "otroMes");
+                celda.innerHTML = `<span class="numeroDia">${dia}</span>`;
+                contenedorCalendario.appendChild(celda);
+            }
+
+            for (let dia = 1; dia <= ultimoDia; dia++) {
+                const fecha = new Date(año, mes, dia);
+                const celda = document.createElement("div");
+                celda.classList.add("dia");
+                if (formatearFecha(fecha) === hoyStr) celda.classList.add("hoy");
+
+                const numero = document.createElement("span");
+                numero.classList.add("numeroDia");
+                numero.textContent = dia;
+                celda.appendChild(numero);
+
+                obtenerEventos(fecha).forEach(ev => {
+                    const div = document.createElement("div");
+                    div.classList.add("evento");
+                    div.textContent = ev.nombre;
+                    div.style.background = ev.color;
+                    div.title = `${ev.horaInicio} - ${ev.horaFin} · ${ev.nombre}`;
+                    div.addEventListener("click", () => abrirModal(ev));
+                    celda.appendChild(div);
+                });
+
+                contenedorCalendario.appendChild(celda);
+            }
+
+            const totalCeldas = diaSemanaInicio + ultimoDia;
+            const celdasRestantes = (7 - (totalCeldas % 7)) % 7;
+            for (let i = 1; i <= celdasRestantes; i++) {
+                const celda = document.createElement("div");
+                celda.classList.add("dia", "otroMes");
+                celda.innerHTML = `<span class="numeroDia">${i}</span>`;
+                contenedorCalendario.appendChild(celda);
+            }
+        }
+
+        function renderizarListaTodos() {
+            listaTodos.innerHTML = "";
+
+            if (eventos.length === 0) {
+                listaTodos.innerHTML = `<div class="vacio">No hay eventos.</div>`;
+                return;
+            }
+
+            const ordenados = [...eventos].sort((a, b) =>
+                (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio)
+            );
+
+            ordenados.forEach(ev => {
+                const item = document.createElement("div");
+                item.classList.add("item-evento");
+                item.innerHTML = `
+                    <div class="item-color" style="background:${ev.color}"></div>
+                    <div class="item-info">
+                        <div class="item-nombre">${ev.nombre}</div>
+                        <div class="item-desc">${ev.descripcion}</div>
+                        <div class="item-fecha">${ev.dia} de ${meses[ev.mes - 1]} de ${ev.año}</div>
+                    </div>
+                    <div class="item-hora">${ev.horaInicio}<br>${ev.horaFin}</div>
+                `;
+                item.addEventListener("click", () => abrirModal(ev));
+                listaTodos.appendChild(item);
+            });
+        }
+
+        function abrirModal(ev) {
+            modalTitulo.textContent = ev.nombre;
+            modalTitulo.style.color = ev.color;
+            modalFecha.textContent =
+                `${ev.dia} de ${meses[ev.mes - 1]} de ${ev.año} · ${ev.horaInicio} – ${ev.horaFin}`;
+            modalDescripcion.textContent = ev.descripcion || "Sin descripción.";
+            modal.classList.add("activo");
+        }
+
+        function cerrar() { modal.classList.remove("activo"); }
+
+        btnAnterior.addEventListener("click", () => {
+            fechaActual.setMonth(fechaActual.getMonth() - 1);
+            renderizarCalendario();
+        });
+        btnSiguiente.addEventListener("click", () => {
+            fechaActual.setMonth(fechaActual.getMonth() + 1);
+            renderizarCalendario();
+        });
+        btnHoy.addEventListener("click", () => {
+            fechaActual = new Date();
+            renderizarCalendario();
+        });
+
+        btnVerTodos.addEventListener("click", () => {
+            vistaCalendario.classList.add("oculto");
+            vistaTodos.classList.add("activa");
+        });
+
+        btnVolver.addEventListener("click", () => {
+            vistaTodos.classList.remove("activa");
+            vistaCalendario.classList.remove("oculto");
+        });
+
+        cerrarModal.addEventListener("click", cerrar);
+        modal.addEventListener("click", (e) => { if (e.target === modal) cerrar(); });
+
+        cargarEventos();
+    </script>
+</body>
+</html>
