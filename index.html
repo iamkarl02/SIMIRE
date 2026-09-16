@@ -1,75 +1,1898 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMIRE · Sistemas Microinformáticos y Redes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            background: #fafafa;
-            color: #222;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 40px 20px;
-        }
+  :root {
+    --bg: #0f172a;
+    --surface: rgba(30, 41, 59, 0.85);
+    --surface-solid: #1e293b;
+    --surface-2: #334155;
+    --text: #f8fafc;
+    --text-soft: #cbd5e1;
+    --text-dim: #64748b;
+    --border: #334155;
+    --border-strong: #475569;
+    --accent: #3b82f6;
+    --accent-soft: rgba(59, 130, 246, 0.15);
+    --ok: #22c55e;
+    --err: #ef4444;
+    --pend: #64748b;
 
-        .contenedor {
-            width: 100%;
-            max-width: 1100px;
-        }
+    --c-montaje:   #64748b;
+    --c-ofimatica: #ea580c;
+    --c-somos:     #2563eb;
+    --c-ingles:    #7c3aed;
+    --c-redes:     #dc2626;
+    --c-ipe:       #d97706;
+    --c-sosten:    #059669;
+  }
 
-        /* ---------- Barra superior (idéntica al resto) ---------- */
-        .topbar {
-            display: flex;
-            gap: 4px;
-            background: #fff;
-            border: 1px solid #ececec;
-            border-radius: 10px;
-            padding: 4px;
-        }
+  [data-theme="light"] {
+    --bg: #f8fafc;
+    --surface: rgba(255, 255, 255, 0.85);
+    --surface-solid: #ffffff;
+    --surface-2: #f1f5f9;
+    --text: #0f172a;
+    --text-soft: #475569;
+    --text-dim: #94a3b8;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+  }
 
-        .topbar a {
-            flex: 1;
-            text-align: center;
-            text-decoration: none;
-            padding: 10px 0;
-            font-size: 0.82rem;
-            color: #777;
-            border-radius: 6px;
-            transition: all 0.15s;
-            font-weight: 500;
-        }
+  html, body {
+    height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    font-size: 15px;
+    transition: background 0.3s, color 0.3s;
+  }
 
-        .topbar a:hover { color: #000; background: #f5f5f5; }
-        .topbar a.activo { background: #222; color: #fff; }
+  .navbar-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 88px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .navbar {
+    width: 1280px;
+    height: 64px;
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.15);
+    transform-origin: center center;
+    flex-shrink: 0;
+    pointer-events: auto;
+  }
 
-        /* ---------- Responsive ---------- */
-        @media (max-width: 480px) {
-            body { padding: 16px 10px; }
-            .topbar { padding: 3px; }
-            .topbar a { font-size: 0.68rem; padding: 7px 0; }
-        }
-    </style>
+  .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 8px; border-radius: 10px; transition: background 0.15s; }
+  .logo:hover { background: var(--surface-2); }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+  }
+  .logo-text h1 { font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.5px; line-height: 1.1; }
+  .logo-text p { font-size: 0.68rem; color: var(--text-soft); font-weight: 400; margin-top: 2px; }
+
+  .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; background: var(--surface-2); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+  .nav-links > li > a {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-soft);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .nav-links > li > a:hover { color: var(--text); background: var(--surface); }
+  .nav-links > li > a.active { color: var(--accent); background: var(--surface-solid); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+  .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .btn-nav-action {
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    font-family: inherit; font-weight: 600;
+  }
+  .btn-nav-action:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-strong); }
+  .btn-nav-action.activo { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .sim-panel {
+    position: fixed;
+    top: 96px;
+    right: 24px;
+    width: 320px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    z-index: 950;
+    box-shadow: 0 12px 30px -6px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transform-origin: top right;
+    transform: scale(0.9) translateY(-6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  }
+  .sim-panel.abierto {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+  .sim-panel h4 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sim-panel h4 .cerrar-x {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .sim-panel h4 .cerrar-x:hover { color: var(--text); }
+
+  .sim-fila { display: flex; align-items: center; gap: 10px; }
+  .sim-fila label { font-size: 0.72rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; min-width: 44px; }
+  .sim-panel .dia-sim {
+    font-size: 0.78rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    flex: 1;
+    text-align: center;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .sim-panel .dia-sim:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+  .sim-panel input[type="range"] { flex: 1; width: 100%; }
+  .sim-panel .hora-sim {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 8px;
+    min-width: 62px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .sim-panel .btn-toggle {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .sim-panel .btn-toggle:hover { opacity: 0.9; }
+  .sim-panel .btn-toggle.activo { background: var(--accent); color: #fff; }
+
+  .pantallas {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    padding-top: 88px;
+    overflow: hidden; z-index: 1;
+    box-sizing: border-box;
+  }
+
+  .pantalla {
+    position: absolute; inset: 88px 0 0 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 24px 28px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  .pantalla.active { opacity: 1; visibility: visible; z-index: 2; }
+  .pantalla h2 { font-size: 1.05rem; font-weight: 600; color: var(--text-soft); margin-bottom: 22px; text-align: center; }
+
+  /* RESUMEN */
+  #resumen { padding: 0; overflow: hidden; align-items: center; justify-content: center; }
+  .rs-escalador-wrap {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    padding: 14px 14px 26px 14px;
+    box-sizing: border-box;
+  }
+  .rs-escalador {
+    width: 1280px; height: 720px;
+    transform-origin: center center;
+    background: var(--bg);
+    display: grid;
+    grid-template-columns: 1.35fr 1fr 1.15fr;
+    grid-template-rows: 64px 1fr 150px;
+    gap: 12px;
+    padding: 14px;
+    flex-shrink: 0;
+  }
+
+  .rs-header {
+    grid-column: 1 / 4;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-solid); border: 1px solid var(--border);
+    border-radius: 14px; padding: 0 22px; gap: 16px;
+  }
+  .rs-header .fecha-info { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .rs-header .hora-grande { font-size: 1.7rem; font-weight: 700; color: var(--text); }
+  .rs-header .dia-grande { font-size: 0.95rem; font-weight: 600; text-transform: capitalize; }
+  .rs-header .fecha-chica { font-size: 0.82rem; color: var(--text-dim); }
+  .rs-header .profe-ahora-mini { font-size: 0.82rem; color: var(--text-soft); background: var(--surface-2); padding: 6px 14px; border-radius: 8px; font-weight: 500; }
+
+  .rs-col-clases { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .resumen-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; position: relative; min-height: 0; overflow: hidden; }
+  .resumen-card h3 { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; }
+  .card-ahora { border-left: 4px solid var(--accent); flex: 1.2; }
+  .card-ahora h3 { color: var(--accent); }
+  .card-siguiente { border-left: 4px solid var(--border-strong); flex: 1; }
+
+  .asig-titulo { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+  .asig-profe { font-size: 0.82rem; color: var(--text-soft); margin-bottom: 8px; }
+  .asig-hora { font-size: 0.75rem; color: var(--text-soft); background: var(--surface-2); padding: 3px 10px; border-radius: 6px; width: fit-content; font-weight: 500; margin-bottom: 8px; }
+
+  .progress-wrapper { width: 100%; margin-top: auto; }
+  .progress-bar-bg { width: 100%; height: 7px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.4s ease; border-radius: 999px; }
+  .progress-txt { font-size: 0.68rem; color: var(--text-dim); text-align: right; margin-top: 4px; font-weight: 600; }
+
+  .rs-col-minical { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; min-height: 0; }
+  .mini-cal { display: flex; flex-direction: column; background: var(--surface-solid); border: 1px solid var(--border); border-radius: 14px; padding: 14px; flex: 1; min-height: 0; }
+  .mini-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .mini-cal-mes { font-size: 0.82rem; font-weight: 600; text-transform: capitalize; }
+  .mini-cal-nav button { background: transparent; border: 1px solid var(--border); color: var(--text-soft); width: 22px; height: 22px; border-radius: 6px; cursor: pointer; }
+  .mini-cal-dias-sem, .mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .mini-cal-dias-sem span { text-align: center; font-size: 0.58rem; font-weight: 600; color: var(--text-dim); }
+  .mini-cal-dia { height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; border-radius: 6px; position: relative; }
+  .mini-cal-dia.otro-mes { color: var(--text-dim); opacity: 0.4; }
+  .mini-cal-dia.hoy { background: var(--accent); color: #fff; font-weight: 600; }
+  .mini-cal-dia.tiene-evento::after { content: ''; position: absolute; bottom: 2px; width: 4px; height: 4px; background: #ea580c; border-radius: 50%; }
+
+  .rs-col-extra { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+  .resumen-tarea-card {
+    background: var(--surface-solid); border: 1px solid var(--border);
+    border-left: 4px solid #d97706; border-radius: 14px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden;
+  }
+  .resumen-tarea-card h3 { font-size: 0.7rem; font-weight: 600; color: #d97706; text-transform: uppercase; margin-bottom: 0; }
+  .rs-tarea-badge { display: inline-block; background: var(--accent-soft); color: var(--accent); padding: 3px 10px; border-radius: 999px; font-size: 0.65rem; font-weight: 600; width: fit-content; }
+  .rs-tarea-titulo { font-size: 0.98rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .rs-tarea-fecha { font-size: 0.72rem; color: var(--text-soft); }
+  .rs-countdown { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: auto; }
+  .rs-countdown .caja { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 2px; text-align: center; }
+  .rs-countdown .caja .v { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1; }
+  .rs-countdown .caja .l { font-size: 0.54rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-top: 3px; }
+
+  .resumen-enlaces-card {
+    background: var(--surface-solid); border: 1px solid var(--border);
+    border-left: 4px solid var(--accent); border-radius: 14px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden;
+  }
+  .resumen-enlaces-card h3 { font-size: 0.7rem; font-weight: 600; color: var(--accent); text-transform: uppercase; margin-bottom: 0; }
+  .rs-enlaces-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; min-height: 0; }
+  .rs-enlace {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
+    padding: 6px 2px; text-decoration: none; color: var(--text);
+    font-size: 0.62rem; font-weight: 600; text-align: center;
+    transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .rs-enlace:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--accent-soft); }
+  .rs-enlace .ic { font-size: 1.15rem; }
+
+  .rs-footer { grid-column: 1 / 4; grid-row: 3; display: grid; grid-template-columns: 280px 1fr; gap: 12px; min-height: 0; }
+  .card-profe { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .card-profe .icono-profe { font-size: 1.6rem; margin-bottom: 4px; }
+  .card-profe .nombre-profe { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+  .card-profe .asig-profe { font-size: 0.75rem; color: var(--text-soft); margin-bottom: 6px; }
+  .card-profe .info-profe { font-size: 0.68rem; color: var(--text-dim); background: var(--surface-2); padding: 3px 10px; border-radius: 6px; }
+
+  .card-alumnos-img { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; min-height: 0; }
+  .profe-top-img { display: flex; justify-content: center; margin-bottom: 6px; }
+  .profe-top-img .btn-profe-img { background: var(--text); color: var(--bg); font-size: 0.65rem; font-weight: 600; padding: 3px 20px; border-radius: 5px; }
+  .alumnos-wrapper-img { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; min-height: 0; }
+  .alumnos-col-img { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .fila-alumnos { display: grid; gap: 4px; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  .alumno-img { background: var(--surface-2); border-radius: 5px; padding: 3px; text-align: center; font-size: 0.65rem; font-weight: 500; display: flex; align-items: center; justify-content: center; min-height: 22px; }
+
+  /* INICIO */
+  .inicio-centro { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .pantalla-icono-grande { font-size: 3.2rem; margin-bottom: 24px; }
+  .pantalla-badge { background: var(--accent-soft); color: var(--accent); padding: 5px 14px; border-radius: 999px; font-size: 0.72rem; font-weight: 500; margin-bottom: 20px; }
+  .inicio-centro h2 { font-size: 2.4rem; font-weight: 700; color: var(--text); }
+  .inicio-centro p { color: var(--text-soft); font-size: 0.98rem; max-width: 520px; line-height: 1.7; margin-top: 16px; }
+
+  /* HORARIO */
+  .horario-wrapper { width: 100%; max-width: 1400px; height: calc(100% - 40px); display: flex; flex-direction: column; overflow-x: auto; }
+  .horario-tabla { width: 100%; min-width: 700px; height: 100%; border-collapse: separate; border-spacing: 5px; table-layout: fixed; }
+  .horario-tabla th, .horario-tabla td { padding: 4px; text-align: center; border-radius: 8px; font-size: 0.72rem; vertical-align: middle; }
+  .horario-tabla thead th { background: var(--surface-solid); font-weight: 600; color: var(--text-soft); border: 1px solid var(--border); height: 36px; }
+  .horario-tabla .hora-col { background: var(--surface-solid); font-weight: 500; font-size: 0.66rem; color: var(--text-soft); width: 92px; border: 1px solid var(--border); }
+  
+  .asig {
+    padding: 6px 4px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 3px; height: 100%; transition: all 0.2s ease; border: 2px solid transparent; position: relative; background: var(--surface-2);
+  }
+  .asig .nombre { font-weight: 600; font-size: 0.68rem; }
+  .asig .profe { font-size: 0.56rem; color: var(--text-soft); }
+
+  .asig.ahora {
+    border: 3px solid var(--accent) !important;
+    background: var(--accent-soft) !important;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    z-index: 5;
+  }
+  .asig.ahora .nombre { color: var(--accent); }
+
+  .asig.siguiente {
+    border: 3px dashed #16a34a !important;
+    background: rgba(22, 163, 74, 0.15) !important;
+    box-shadow: 0 0 8px rgba(22, 163, 74, 0.2);
+    z-index: 4;
+  }
+  .asig.siguiente .nombre { color: #22c55e; }
+
+  .asig[class*="c-"] { border-left: 4px solid var(--border); }
+  .c-montaje   { background: color-mix(in srgb, var(--c-montaje) 20%, var(--surface-solid)); border-left-color: var(--c-montaje) !important; }
+  .c-ofimatica { background: color-mix(in srgb, var(--c-ofimatica) 20%, var(--surface-solid)); border-left-color: var(--c-ofimatica) !important; }
+  .c-somos     { background: color-mix(in srgb, var(--c-somos) 20%, var(--surface-solid)); border-left-color: var(--c-somos) !important; }
+  .c-ingles    { background: color-mix(in srgb, var(--c-ingles) 20%, var(--surface-solid)); border-left-color: var(--c-ingles) !important; }
+  .c-redes     { background: color-mix(in srgb, var(--c-redes) 20%, var(--surface-solid)); border-left-color: var(--c-redes) !important; }
+  .c-ipe       { background: color-mix(in srgb, var(--c-ipe) 20%, var(--surface-solid)); border-left-color: var(--c-ipe) !important; }
+  .c-sosten    { background: color-mix(in srgb, var(--c-sosten) 20%, var(--surface-solid)); border-left-color: var(--c-sosten) !important; }
+  .c-recreo, .c-refuerzo { background: transparent; border: 1px dashed var(--border-strong); color: var(--text-dim); }
+
+  /* SITIOS */
+  .sitios-layout { width: 100%; max-width: 1200px; display: grid; grid-template-columns: 280px 1fr; gap: 16px; margin: 0 auto; }
+
+  /* RELOJ */
+  .reloj-layout { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+  .reloj-hora { font-size: clamp(3.5rem, 12vw, 11rem); font-weight: 700; color: var(--text); letter-spacing: -2px; line-height: 1; margin-bottom: 24px; text-align: center; }
+  .reloj-hora .seg { font-size: 0.45em; color: var(--text-dim); font-weight: 500; }
+  .reloj-dia-semana { font-size: clamp(1rem, 3vw, 1.5rem); font-weight: 600; color: var(--text-soft); text-transform: capitalize; margin-bottom: 6px; text-align: center; }
+  .reloj-fecha { font-size: clamp(0.9rem, 2.5vw, 1.2rem); color: var(--text-dim); text-align: center; }
+
+  /* TAREAS */
+  .tareas-layout { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; max-width: 900px; margin: 0 auto; text-align: center; gap: 20px; }
+  .tareas-header-actions { width: 100%; display: flex; justify-content: flex-end; margin-bottom: -10px; }
+  .btn-ver-todas-tareas { background: var(--surface-solid); border: 1px solid var(--border); color: var(--text-soft); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .btn-ver-todas-tareas:hover { background: var(--surface-2); color: var(--text); border-color: var(--accent); }
+  .tarea-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 20px; padding: clamp(20px, 4vw, 40px); width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .tarea-badge { display: inline-block; background: var(--accent-soft); color: var(--accent); padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 16px; }
+  .tarea-titulo { font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .tarea-fecha-exacta { font-size: 1rem; color: var(--text-soft); font-weight: 500; margin-bottom: 32px; }
+  .countdown-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .countdown-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 8px; }
+  .countdown-box .val { font-size: clamp(1.5rem, 5vw, 3rem); font-weight: 700; color: var(--text); line-height: 1; }
+  .countdown-box .lab { font-size: clamp(0.6rem, 1.5vw, 0.75rem); color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-top: 8px; }
+  .tarea-desc { font-size: 0.9rem; color: var(--text-soft); border-top: 1px dashed var(--border); padding-top: 16px; }
+
+  .lista-tareas-container { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+  .tarea-item-card { background: var(--surface-solid); border: 1px solid var(--border); border-left: 5px solid var(--accent); border-radius: 12px; padding: 16px 20px; text-align: left; display: flex; flex-direction: column; gap: 12px; }
+  .tarea-item-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .tarea-item-header h4 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .tarea-item-header .fecha-badge { font-size: 0.75rem; background: var(--surface-2); color: var(--text-soft); padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+  .tarea-item-desc { font-size: 0.85rem; color: var(--text-soft); line-height: 1.4; }
+  .tarea-item-counter { display: flex; gap: 8px; background: var(--surface-2); padding: 8px 12px; border-radius: 8px; align-items: center; justify-content: flex-start; flex-wrap: wrap; }
+  .tarea-item-counter .unit { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+  .tarea-item-counter .unit span { font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+
+  /* ENLACES */
+  .enlaces-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; margin: 0 auto; }
+  .enlace-card { background: var(--surface-solid); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--text); transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
+  .enlace-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+  .enlace-icon { font-size: 2.5rem; flex-shrink: 0; }
+  .enlace-info h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+  .enlace-info p { font-size: 0.78rem; color: var(--text-soft); }
+
+  /* CALENDARIO */
+  .cal-wrapper { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+  .cal-grande { width: 100%; background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .cal-controles-fecha { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .cal-mes-select, .cal-ano-input { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: 600; outline: none; }
+  .cal-ano-input { width: 80px; text-align: center; }
+  .cal-nav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .cal-nav button, .btn-todos-cal { background: transparent; border: 1px solid var(--border); color: var(--text-soft); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; font-family: inherit; transition: all 0.15s; }
+  .cal-nav button:hover, .btn-todos-cal:hover { background: var(--surface-2); color: var(--text); border-color: var(--accent); }
+  .btn-todos-cal { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .cal-dias-sem, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-dias-sem span { text-align: center; font-size: 0.65rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+  .cal-dia { min-height: 65px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; padding: 4px; font-size: 0.82rem; font-weight: 500; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+  .cal-dia.otro-mes { background: transparent; color: var(--text-dim); opacity: 0.3; }
+  .cal-dia.hoy { border: 2px solid var(--accent); background: var(--accent-soft); }
+  .eventos-container { width: 100%; margin-top: 2px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+  .evento-tag { font-size: 0.58rem; padding: 2px 4px; border-radius: 3px; color: #fff; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ================= MECANOGRAFÍA ================= */
+  #mecanografia { padding: 16px 24px; }
+  .mec-layout { width: 100%; max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+  .mec-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    background: var(--surface-solid); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px;
+  }
+  .mec-toolbar .grupo { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .mec-toolbar label { font-size: 0.72rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+  .mec-select {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 12px; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 0.8rem; cursor: pointer;
+  }
+  .mec-btn {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 14px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .mec-btn:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .mec-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .mec-btn.primary:hover { opacity: 0.9; color: #fff; }
+
+  .mec-stats {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+  }
+  .mec-stat {
+    background: var(--surface-solid); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 8px; text-align: center;
+  }
+  .mec-stat .v { font-size: 1.4rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .mec-stat .v.ok { color: var(--ok); }
+  .mec-stat .v.err { color: var(--err); }
+  .mec-stat .v.acc { color: var(--accent); }
+  .mec-stat .l { font-size: 0.62rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-top: 3px; letter-spacing: 0.4px; }
+
+  .mec-texto-wrap {
+    background: var(--surface-solid); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 26px; line-height: 2; font-size: 1.15rem;
+    font-family: 'JetBrains Mono', 'Consolas', 'Menlo', monospace;
+    letter-spacing: 0.2px;
+    user-select: none;
+    max-height: 220px; overflow-y: auto;
+    position: relative;
+  }
+  .mec-texto-wrap .ch {
+    display: inline;
+    padding: 1px 0;
+    border-radius: 3px;
+    transition: background 0.05s, color 0.05s;
+  }
+  .mec-texto-wrap .ch.pend { color: var(--text-dim); }
+  .mec-texto-wrap .ch.ok { color: var(--ok); background: rgba(34, 197, 94, 0.1); }
+  .mec-texto-wrap .ch.err { color: #fff; background: var(--err); }
+  .mec-texto-wrap .ch.actual { background: var(--accent); color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+  .mec-texto-wrap .ch.actual.err { background: var(--err); box-shadow: 0 0 0 2px var(--err); }
+  .mec-texto-wrap .ch.espacio-err { background: var(--err); color: #fff; border-radius: 3px; }
+
+  .mec-input {
+    width: 100%;
+    min-height: 90px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', 'Consolas', 'Menlo', monospace;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .mec-input:focus { border-color: var(--accent); }
+  .mec-input::placeholder { color: var(--text-dim); }
+
+  .mec-footer {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    font-size: 0.74rem; color: var(--text-dim);
+  }
+  .mec-footer .kbd {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px;
+    padding: 1px 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-soft);
+  }
+
+  .mec-resultado {
+    background: var(--surface-solid); border: 1px solid var(--ok); border-left: 5px solid var(--ok);
+    border-radius: 14px; padding: 16px 20px; display: none;
+    animation: aparecer 0.4s ease;
+  }
+  .mec-resultado.visible { display: block; }
+  .mec-resultado h3 { color: var(--ok); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .mec-resultado .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+  .mec-resultado .res-item { text-align: center; }
+  .mec-resultado .res-item .rv { font-size: 1.6rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .mec-resultado .res-item .rl { font-size: 0.66rem; color: var(--text-dim); text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 800px) {
+    .mec-stats { grid-template-columns: repeat(3, 1fr); }
+    .mec-texto-wrap { font-size: 1rem; padding: 16px 18px; line-height: 1.9; }
+  }
+  @media (max-width: 500px) {
+    .mec-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* MODAL */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
+  .modal-bg.active { display: flex; }
+  .modal-body { background: var(--surface-solid); width: 100%; max-width: 550px; max-height: 85vh; border-radius: 16px; padding: 24px; overflow-y: auto; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+  .modal-close { background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-soft); }
+  .evento-item-card { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .evento-item-card .info { flex: 1; }
+  .evento-item-card h4 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text); }
+  .evento-item-card p { font-size: 0.82rem; color: var(--text-soft); margin-bottom: 4px; }
+  .evento-item-card .meta { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; }
+
+  .estado-sim { position: fixed; top: 96px; left: 24px; background: var(--accent); color: #fff; font-size: 0.68rem; padding: 6px 14px; border-radius: 999px; z-index: 902; display: none; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+  .estado-sim.visible { display: flex; }
+
+  @media (max-width: 950px) {
+    .sitios-layout { grid-template-columns: 1fr; }
+    .sim-panel { right: 12px; left: 12px; width: auto; }
+  }
+</style>
 </head>
 <body>
-    <div class="contenedor">
 
-        <nav class="topbar">
-            <a href="horario.html">Horario</a>
-            <a href="sitios.html">Sitios</a>
-            <a href="calendario.html">Calendario</a>
-            <a href="reloj.html">Reloj</a>
-        </nav>
+  <!-- DOCK -->
+  <div class="navbar-wrap">
+    <nav class="navbar" id="navbarEscalador">
+      <div class="logo" data-target="inicio">
+        <div class="logo-icon">🖥️</div>
+        <div class="logo-text">
+          <h1>SIMIRE</h1>
+          <p>Sistemas Microinformáticos y Redes</p>
+        </div>
+      </div>
 
+      <ul class="nav-links" id="navLinks">
+        <li><a data-target="resumen"><span class="icon">📊</span> Resumen</a></li>
+        <li><a data-target="inicio" class="active"><span class="icon">🏠</span> Inicio</a></li>
+        <li><a data-target="horario"><span class="icon">🕒</span> Horario</a></li>
+        <li><a data-target="sitios"><span class="icon">🌐</span> Sitios</a></li>
+        <li><a data-target="reloj"><span class="icon">⏰</span> Reloj</a></li>
+        <li><a data-target="tareas"><span class="icon">⏳</span> Reloj Tareas</a></li>
+        <li><a data-target="mecanografia"><span class="icon">⌨️</span> Mecanografía</a></li>
+        <li><a data-target="enlaces"><span class="icon">🔗</span> Enlaces</a></li>
+        <li><a data-target="calendario" class="btn-calendario">📅 Calendario</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="btn-nav-action" id="btnSimToggle" title="Mostrar/ocultar simulador">🕹️</button>
+        <button class="btn-nav-action" id="btnThemeToggle" title="Cambiar tema">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <button class="btn-nav-action" id="btnFullscreen" title="Pantalla completa">
+          <span>⛶</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Panel del simulador -->
+  <div class="sim-panel" id="simPanel">
+    <h4>
+      🕹️ Simulador
+      <button class="cerrar-x" id="btnCerrarSimPanel" title="Cerrar">&times;</button>
+    </h4>
+    <div class="sim-fila">
+      <label>Día</label>
+      <button class="dia-sim" id="diaSim">LUN</button>
     </div>
+    <div class="sim-fila">
+      <label>Hora</label>
+      <span class="hora-sim" id="horaSim">08:30</span>
+    </div>
+    <input type="range" id="rangoHora" min="0" max="1439" step="1" value="510">
+    <button class="btn-toggle" id="btnSimular">Activar simulación</button>
+  </div>
+
+  <div class="estado-sim" id="estadoSim">🕹️ MODO SIMULACIÓN</div>
+
+  <div class="pantallas">
+
+    <!-- RESUMEN -->
+    <section class="pantalla" id="resumen">
+      <div class="rs-escalador-wrap">
+        <div class="rs-escalador" id="rsEscalador">
+          <div class="rs-header">
+            <div class="fecha-info">
+              <span class="hora-grande" id="rsHora">--:--:--</span>
+              <span class="dia-grande" id="rsDia">—</span>
+              <span class="fecha-chica" id="rsFecha">—</span>
+            </div>
+            <div class="profe-ahora-mini" id="rsProfeMini">👨‍🏫 —</div>
+          </div>
+
+          <div class="rs-col-clases">
+            <div class="resumen-card card-ahora" id="rsCardAhora">
+              <h3 id="rsAhoraHeader">📍 Clase Actual</h3>
+              <div class="asig-titulo" id="rsAhoraTitulo">—</div>
+              <div class="asig-profe" id="rsAhoraProfe">—</div>
+              <div class="asig-hora" id="rsAhoraHora">—</div>
+              <div class="progress-wrapper" id="rsProgressWrapper">
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" id="rsProgressBar"></div>
+                </div>
+                <div class="progress-txt" id="rsProgressTxt">0%</div>
+              </div>
+            </div>
+
+            <div class="resumen-card card-siguiente" id="rsCardSig">
+              <h3 id="rsSigHeader">⏭️ Siguiente Clase</h3>
+              <div class="asig-titulo" id="rsSigTitulo">—</div>
+              <div class="asig-profe" id="rsSigProfe">—</div>
+              <div class="asig-hora" id="rsSigHora">—</div>
+            </div>
+          </div>
+
+          <div class="rs-col-minical">
+            <div class="mini-cal">
+              <div class="mini-cal-header">
+                <div class="mini-cal-mes" id="miniCalMes">—</div>
+                <div class="mini-cal-nav">
+                  <button id="miniPrev">‹</button>
+                  <button id="miniNext">›</button>
+                </div>
+              </div>
+              <div class="mini-cal-dias-sem">
+                <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+              </div>
+              <div class="mini-cal-grid" id="miniCalGrid"></div>
+            </div>
+          </div>
+
+          <div class="rs-col-extra">
+            <div class="resumen-tarea-card">
+              <h3>⏳ Próxima Tarea / Examen</h3>
+              <div class="rs-tarea-badge" id="rsTareaBadge">Cargando...</div>
+              <div class="rs-tarea-titulo" id="rsTareaTitulo">—</div>
+              <div class="rs-tarea-fecha" id="rsTareaFecha">—</div>
+              <div class="rs-countdown">
+                <div class="caja"><div class="v" id="rsTareaDias">00</div><div class="l">Días</div></div>
+                <div class="caja"><div class="v" id="rsTareaHoras">00</div><div class="l">Horas</div></div>
+                <div class="caja"><div class="v" id="rsTareaMin">00</div><div class="l">Min</div></div>
+                <div class="caja"><div class="v" id="rsTareaSeg">00</div><div class="l">Seg</div></div>
+              </div>
+            </div>
+
+            <div class="resumen-enlaces-card">
+              <h3>🔗 Enlaces Rápidos</h3>
+              <div class="rs-enlaces-grid">
+                <a href="https://classroom.google.com" target="_blank" class="rs-enlace"><span class="ic">🏫</span> Classroom</a>
+                <a href="https://drive.google.com" target="_blank" class="rs-enlace"><span class="ic">📁</span> Drive</a>
+                <a href="https://calendar.google.com" target="_blank" class="rs-enlace"><span class="ic">📅</span> Calendar</a>
+                <a href="https://docs.google.com" target="_blank" class="rs-enlace"><span class="ic">📝</span> Docs</a>
+                <a href="https://sheets.google.com" target="_blank" class="rs-enlace"><span class="ic">📊</span> Sheets</a>
+                <a href="https://slides.google.com" target="_blank" class="rs-enlace"><span class="ic">🖥️</span> Slides</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="rs-footer">
+            <div class="card-profe">
+              <div class="icono-profe" id="rsIconoProfe">👤</div>
+              <div class="nombre-profe" id="rsNombreProfe">—</div>
+              <div class="asig-profe" id="rsAsigProfe">Sin clase en este momento</div>
+              <div class="info-profe" id="rsInfoProfe">—</div>
+            </div>
+            <div class="card-alumnos-img mini" id="rsAlumnosCard"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INICIO -->
+    <section class="pantalla active" id="inicio">
+      <div class="inicio-centro">
+        <div class="pantalla-icono-grande">🖥️</div>
+        <div class="pantalla-badge">Ciclo Formativo · Grado Medio</div>
+        <h2>Bienvenido a SIMIRE</h2>
+        <p>Sistemas Microinformáticos y Redes · Tu panel de control del día a día.</p>
+      </div>
+    </section>
+
+    <!-- HORARIO -->
+    <section class="pantalla" id="horario">
+      <h2>Horario</h2>
+      <div class="horario-wrapper">
+        <table class="horario-tabla">
+          <thead>
+            <tr>
+              <th>HORA</th>
+              <th>LUNES</th>
+              <th>MARTES</th>
+              <th>MIÉRCOLES</th>
+              <th>JUEVES</th>
+              <th>VIERNES</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpoHorario"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SITIOS -->
+    <section class="pantalla" id="sitios">
+      <h2>Sitios</h2>
+      <div class="sitios-layout">
+        <div class="card-profe">
+          <div class="icono-profe" id="iconoProfe">👤</div>
+          <div class="nombre-profe" id="nombreProfe">—</div>
+          <div class="asig-profe" id="asigProfe">Sin clase en este momento</div>
+          <div class="info-profe" id="infoProfe">—</div>
+        </div>
+        <div class="card-alumnos-img" id="alumnosCard"></div>
+      </div>
+    </section>
+
+    <!-- RELOJ -->
+    <section class="pantalla" id="reloj">
+      <h2>Reloj</h2>
+      <div class="reloj-layout">
+        <div class="reloj-hora">
+          <span id="rjHora">--</span>:<span id="rjMin">--</span><span class="seg">:<span id="rjSeg">--</span></span>
+        </div>
+        <div class="reloj-dia-semana" id="rjDiaSemana">—</div>
+        <div class="reloj-fecha" id="rjFecha">—</div>
+      </div>
+    </section>
+
+    <!-- TAREAS -->
+    <section class="pantalla" id="tareas">
+      <h2>Próxima Tarea / Examen</h2>
+      <div class="tareas-layout">
+        <div class="tareas-header-actions">
+          <button class="btn-ver-todas-tareas" id="btnVerTodasTareas">📋 Ver Todas las Tareas</button>
+        </div>
+
+        <div class="tarea-card">
+          <div class="tarea-badge" id="cdBadge">Cargando...</div>
+          <h3 class="tarea-titulo" id="cdTitulo">Buscando próxima entrega...</h3>
+          <p class="tarea-fecha-exacta" id="cdFechaExacta">—</p>
+
+          <div class="countdown-grid">
+            <div class="countdown-box"><div class="val" id="cdDias">00</div><div class="lab">Días</div></div>
+            <div class="countdown-box"><div class="val" id="cdHoras">00</div><div class="lab">Horas</div></div>
+            <div class="countdown-box"><div class="val" id="cdMin">00</div><div class="lab">Minutos</div></div>
+            <div class="countdown-box"><div class="val" id="cdSeg">00</div><div class="lab">Segundos</div></div>
+          </div>
+
+          <p class="tarea-desc" id="cdDesc">Las tareas y exámenes se leen automáticamente del archivo fechas.txt</p>
+        </div>
+
+        <div class="lista-tareas-container" id="listaTodasTareas" style="display: none;"></div>
+      </div>
+    </section>
+
+    <!-- ================= MECANOGRAFÍA ================= -->
+    <section class="pantalla" id="mecanografia">
+      <h2>⌨️ Mecanografía · Práctica de Escritura</h2>
+
+      <div class="mec-layout">
+        <div class="mec-toolbar">
+          <div class="grupo">
+            <label>Dificultad</label>
+            <select class="mec-select" id="mecDificultad">
+              <option value="facil">Fácil · Textos cortos</option>
+              <option value="media" selected>Media · Con tildes y signos</option>
+              <option value="dificil">Difícil · Puntuación compleja</option>
+              <option value="experto">Experto · Símbolos y números</option>
+              <option value="infierno">🔥 Infierno · Todo mezclado</option>
+            </select>
+          </div>
+          <div class="grupo">
+            <button class="mec-btn" id="mecNuevo">🔄 Nuevo texto</button>
+            <button class="mec-btn primary" id="mecReiniciar">↻ Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="mec-stats">
+          <div class="mec-stat"><div class="v acc" id="mecPPM">0</div><div class="l">PPM</div></div>
+          <div class="mec-stat"><div class="v" id="mecPrecision">100%</div><div class="l">Precisión</div></div>
+          <div class="mec-stat"><div class="v ok" id="mecCorrectos">0</div><div class="l">Correctos</div></div>
+          <div class="mec-stat"><div class="v err" id="mecErrores">0</div><div class="l">Errores</div></div>
+          <div class="mec-stat"><div class="v" id="mecTiempo">0s</div><div class="l">Tiempo</div></div>
+        </div>
+
+        <div class="mec-texto-wrap" id="mecTextoWrap" tabindex="0"></div>
+
+        <textarea
+          class="mec-input"
+          id="mecInput"
+          placeholder="Empieza a escribir aquí cuando pulses 'Comenzar'…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        ></textarea>
+
+        <div class="mec-footer">
+          <span>💡 Pulsa <span class="kbd">Enter</span> o empieza a escribir para comenzar · <span class="kbd">Esc</span> reinicia</span>
+          <span id="mecProgresoTxt">0 / 0 caracteres</span>
+        </div>
+
+        <div class="mec-resultado" id="mecResultado">
+          <h3>✅ ¡Texto completado!</h3>
+          <div class="res-grid">
+            <div class="res-item"><div class="rv" id="resPPM">0</div><div class="rl">PPM</div></div>
+            <div class="res-item"><div class="rv" id="resPrecision">0%</div><div class="rl">Precisión</div></div>
+            <div class="res-item"><div class="rv" id="resCorrectos">0</div><div class="rl">Correctos</div></div>
+            <div class="res-item"><div class="rv" id="resErrores">0</div><div class="rl">Errores</div></div>
+            <div class="res-item"><div class="rv" id="resTiempo">0s</div><div class="rl">Tiempo</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENLACES -->
+    <section class="pantalla" id="enlaces">
+      <h2>Enlaces Rápidos</h2>
+      <div class="enlaces-grid">
+        <a href="https://classroom.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">🏫</div>
+          <div class="enlace-info"><h3>Google Classroom</h3><p>Accede a tus clases, tareas y entregas pendientes.</p></div>
+        </a>
+        <a href="https://drive.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">📁</div>
+          <div class="enlace-info"><h3>Google Drive</h3><p>Tus archivos en la nube y documentos compartidos.</p></div>
+        </a>
+        <a href="https://calendar.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">📅</div>
+          <div class="enlace-info"><h3>Google Calendar</h3><p>Gestiona tu agenda personal y recordatorios.</p></div>
+        </a>
+        <a href="https://docs.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">📝</div>
+          <div class="enlace-info"><h3>Documentos de Google</h3><p>Crea y edita documentos de texto en línea.</p></div>
+        </a>
+        <a href="https://sheets.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">📊</div>
+          <div class="enlace-info"><h3>Hojas de Cálculo</h3><p>Organiza datos, cálculos y presupuestos.</p></div>
+        </a>
+        <a href="https://slides.google.com" target="_blank" class="enlace-card">
+          <div class="enlace-icon">🖥️</div>
+          <div class="enlace-info"><h3>Presentaciones</h3><p>Diseña diapositivas para tus exposiciones.</p></div>
+        </a>
+      </div>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section class="pantalla" id="calendario">
+      <h2>Calendario</h2>
+      <div class="cal-wrapper">
+        <div class="cal-grande">
+          <div class="cal-header">
+            <div class="cal-controles-fecha">
+              <select class="cal-mes-select" id="calMesSelect">
+                <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+                <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+                <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+                <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+              </select>
+              <input type="number" class="cal-ano-input" id="calAnoInput" min="1900" max="2100">
+            </div>
+            <div class="cal-nav">
+              <button class="btn-todos-cal" id="btnTodosCal">📑 Todos</button>
+              <button id="calPrev">‹ Anterior</button>
+              <button id="calHoy">Hoy</button>
+              <button id="calNext">Siguiente ›</button>
+            </div>
+          </div>
+          <div class="cal-dias-sem">
+            <span>LUN</span><span>MAR</span><span>MIÉ</span><span>JUE</span><span>VIE</span><span>SÁB</span><span>DOM</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-bg" id="modalEventos">
+    <div class="modal-body">
+      <div class="modal-header">
+        <h3 id="modalTitulo">Detalles del Evento</h3>
+        <button class="modal-close" id="btnCerrarModal">&times;</button>
+      </div>
+      <div id="modalContenido"></div>
+    </div>
+  </div>
+
+  <script>
+    const A = {
+      MONTAJE:   { nombre: 'Montaje y Mantenimiento de Equipos', corto: 'Montaje',          profe: 'David Álvarez Árias',     clase: 'c-montaje' },
+      OFIMATICA: { nombre: 'Aplicaciones Ofimáticas',            corto: 'Aplic. Ofimáticas', profe: 'Jaime Antonio Losada López', clase: 'c-ofimatica' },
+      SOMOS:     { nombre: 'Sistemas Operativos Monopuesto',     corto: 'Sist. Op. Monop.',  profe: 'Enrique Prieto Magán',   clase: 'c-somos' },
+      INGLES:    { nombre: 'Inglés',                              corto: 'Inglés',            profe: 'Lucía González',         clase: 'c-ingles' },
+      REDES:     { nombre: 'Redes Locales',                       corto: 'Redes Locales',     profe: 'Carlos Comesana Montalvo', clase: 'c-redes' },
+      IPE:       { nombre: 'Itinerario Personal para la Empleabilidad (IPE I)', corto: 'IPE I', profe: 'Daniel Rivas Míguez', clase: 'c-ipe' },
+      SOSTEN:    { nombre: 'Sostenibilidad',                      corto: 'Sostenibilidad',    profe: 'Daniel Rivas Míguez',    clase: 'c-sosten' },
+      RECREO:    { nombre: 'RECREO',                              corto: 'RECREO',            profe: '',                        clase: 'c-recreo' },
+      REFUERZO:  { nombre: 'REFUERZO',                            corto: 'REFUERZO',          profe: '',                        clase: 'c-refuerzo' }
+    };
+
+    const franjas = [
+      { ini: '08:30', fin: '09:20' }, { ini: '09:20', fin: '10:10' }, { ini: '10:10', fin: '11:00' },
+      { ini: '11:00', fin: '11:20' }, { ini: '11:20', fin: '12:10' }, { ini: '12:10', fin: '13:00' },
+      { ini: '13:00', fin: '13:50' }, { ini: '13:50', fin: '14:40' }, { ini: '14:40', fin: '15:30' },
+      { ini: '15:30', fin: '16:45' }
+    ];
+
+    const horario = {
+      1: [ A.MONTAJE,   A.MONTAJE,   A.REDES,   A.RECREO, A.REDES,    A.REDES,   A.IPE,      A.IPE,      A.REFUERZO, A.REFUERZO ],
+      2: [ A.OFIMATICA, A.OFIMATICA, A.OFIMATICA,A.RECREO,A.SOMOS,   A.SOMOS,   A.MONTAJE,  A.MONTAJE,  null,       null ],
+      3: [ A.SOMOS,     A.SOMOS,     A.IPE,     A.RECREO, A.SOSTEN,  A.REDES,   A.REDES,    A.REDES,    A.REFUERZO, A.REFUERZO ],
+      4: [ A.INGLES,    A.INGLES,    A.IPE,     A.RECREO, A.MONTAJE, A.MONTAJE,A.OFIMATICA,A.OFIMATICA,A.REFUERZO,A.REFUERZO ],
+      5: [ A.MONTAJE,   A.MONTAJE,   A.SOMOS,   A.RECREO, A.SOMOS,   A.REDES,   A.REDES,    null,       null,       null ]
+    };
+
+    const profesRefuerzo = {
+      1: [ {profe:'David Álvarez Árias'}, {profe:'Enrique Prieto Magán'} ],
+      3: [ {profe:'Carlos Comesana Montalvo'}, {profe:'Jaime Antonio Losada López'} ],
+      4: [ {profe:'Lucía González'}, {profe:'Daniel Rivas Míguez'} ]
+    };
+
+    const filasIzq = [["Pablo", "Fernando", "Juan", "Iago", "Airam"], ["Brais", "Brego", "Diego", "Carlos", "Liam"], ["Pablo", "Ivan", "Daniel", "Ares", "Pablo"], ["Adrian", "Alejandro", "Andres", "Breogan"]];
+    const filasDer = [["Brais", "Thiago", "Layla"], ["Simon", "Izan", "Iago"], ["Aitor", "Pedro", "David"], ["Alejandra", "Ines", "David"], ["Anxo", "Marc", "Gabriel"]];
+
+    let eventosCalendario = [];
+
+    // ===== ESCALADO PROPORCIONAL =====
+    function escalarDock() {
+      const wrap = document.querySelector('.navbar-wrap');
+      const dock = document.getElementById('navbarEscalador');
+      if (!wrap || !dock) return;
+      const W = 1280, H = 64;
+      const availW = wrap.clientWidth - 32;
+      const availH = 80;
+      const scale = Math.min(availW / W, availH / H, 1);
+      dock.style.transform = `scale(${scale})`;
+    }
+
+    function escalarResumen() {
+      const wrap = document.querySelector('#resumen .rs-escalador-wrap');
+      const cont = document.getElementById('rsEscalador');
+      if (!wrap || !cont) return;
+      const W = 1280, H = 720;
+      const availW = wrap.clientWidth;
+      const availH = wrap.clientHeight;
+      const scale = Math.min(availW / W, availH / H);
+      cont.style.transform = `scale(${scale})`;
+    }
+
+    function escalarTodo() {
+      escalarDock();
+      escalarResumen();
+    }
+    window.addEventListener('resize', escalarTodo);
+    document.addEventListener('visibilitychange', escalarTodo);
+
+    // TEMA
+    const btnTheme = document.getElementById('btnThemeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    function setTheme(light) {
+      if (light) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+    btnTheme.addEventListener('click', () => {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      setTheme(!isLight);
+    });
+    if (localStorage.getItem('theme') === 'light') setTheme(true); else setTheme(false);
+
+    // PANTALLA COMPLETA
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    });
+
+    // PANEL SIMULADOR
+    const simPanel = document.getElementById('simPanel');
+    const btnSimToggle = document.getElementById('btnSimToggle');
+    const btnCerrarSimPanel = document.getElementById('btnCerrarSimPanel');
+
+    function abrirSimPanel() { simPanel.classList.add('abierto'); btnSimToggle.classList.add('activo'); }
+    function cerrarSimPanel() { simPanel.classList.remove('abierto'); btnSimToggle.classList.remove('activo'); }
+    btnSimToggle.addEventListener('click', () => {
+      if (simPanel.classList.contains('abierto')) cerrarSimPanel(); else abrirSimPanel();
+    });
+    btnCerrarSimPanel.addEventListener('click', cerrarSimPanel);
+    document.addEventListener('click', (e) => {
+      if (!simPanel.classList.contains('abierto')) return;
+      if (simPanel.contains(e.target)) return;
+      if (btnSimToggle.contains(e.target)) return;
+      cerrarSimPanel();
+    });
+
+    // CARGAR FECHAS
+    async function cargarFechasTXT() {
+      try {
+        const respuesta = await fetch('fechas.txt');
+        if (!respuesta.ok) return;
+        const texto = await respuesta.text();
+        const lineas = texto.split('\n');
+        eventosCalendario = lineas.map(linea => {
+          const l = linea.trim();
+          if (!l) return null;
+          const partes = l.split(/\s+/);
+          if (partes.length < 6) return null;
+          const fPartes = partes[0].split('/');
+          if (fPartes.length !== 3) return null;
+          const fechaStd = `${String(fPartes[0]).padStart(2,'0')}/${String(fPartes[1]).padStart(2,'0')}/${fPartes[2]}`;
+          const nombre = partes[1].replace(/_/g, ' ');
+          const color = partes[2];
+          const hora = `${partes[3]} ${partes[4]} ${partes[5]}`;
+          const descripcion = partes.slice(6).join(' ');
+          const horaInicio = partes[3] || '00:00';
+          const [d, m, y] = fechaStd.split('/').map(Number);
+          const [h, min] = horaInicio.split(':').map(Number);
+          const objetoFecha = new Date(y, m - 1, d, h || 0, min || 0, 0);
+          return { fecha: fechaStd, nombre, color, hora, descripcion, objetoFecha };
+        }).filter(e => e !== null);
+
+        pintarCal();
+        pintarMiniCal();
+        actualizarCuentaRegresiva();
+        renderizarTodasTareas();
+      } catch (e) { console.log("Error al leer fechas.txt"); }
+    }
+
+    // CUENTA REGRESIVA
+    function actualizarCuentaRegresiva() {
+      const ahora = new Date();
+      const futuras = eventosCalendario.filter(e => e.objetoFecha > ahora).sort((a, b) => a.objetoFecha - b.objetoFecha);
+
+      if (futuras.length === 0) {
+        document.getElementById('cdBadge').textContent = 'Sin pendientes';
+        document.getElementById('cdTitulo').textContent = 'No hay tareas o exámenes próximos';
+        document.getElementById('cdFechaExacta').textContent = '—';
+        document.getElementById('cdDias').textContent = '00';
+        document.getElementById('cdHoras').textContent = '00';
+        document.getElementById('cdMin').textContent = '00';
+        document.getElementById('cdSeg').textContent = '00';
+        document.getElementById('cdDesc').textContent = 'Estás al día con tus entregas.';
+
+        document.getElementById('rsTareaBadge').textContent = 'Sin pendientes';
+        document.getElementById('rsTareaTitulo').textContent = 'No hay tareas próximas';
+        document.getElementById('rsTareaFecha').textContent = '—';
+        document.getElementById('rsTareaDias').textContent = '00';
+        document.getElementById('rsTareaHoras').textContent = '00';
+        document.getElementById('rsTareaMin').textContent = '00';
+        document.getElementById('rsTareaSeg').textContent = '00';
+        return;
+      }
+
+      const prox = futuras[0];
+      const diff = prox.objetoFecha - ahora;
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+      const fechaTexto = prox.objetoFecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      document.getElementById('cdBadge').textContent = `Próximo Evento (${prox.hora || 'Todo el día'})`;
+      document.getElementById('cdTitulo').textContent = prox.nombre;
+      document.getElementById('cdFechaExacta').textContent = `📅 ${fechaTexto}`;
+      document.getElementById('cdDias').textContent = String(dias).padStart(2, '0');
+      document.getElementById('cdHoras').textContent = String(horas).padStart(2, '0');
+      document.getElementById('cdMin').textContent = String(minutos).padStart(2, '0');
+      document.getElementById('cdSeg').textContent = String(segundos).padStart(2, '0');
+      document.getElementById('cdDesc').textContent = prox.descripcion || 'Sin detalles adicionales.';
+
+      document.getElementById('rsTareaBadge').textContent = `Próximo Evento (${prox.hora || 'Todo el día'})`;
+      document.getElementById('rsTareaTitulo').textContent = prox.nombre;
+      document.getElementById('rsTareaFecha').textContent = `📅 ${fechaTexto}`;
+      document.getElementById('rsTareaDias').textContent = String(dias).padStart(2, '0');
+      document.getElementById('rsTareaHoras').textContent = String(horas).padStart(2, '0');
+      document.getElementById('rsTareaMin').textContent = String(minutos).padStart(2, '0');
+      document.getElementById('rsTareaSeg').textContent = String(segundos).padStart(2, '0');
+
+      actualizarContadoresListaTareas();
+    }
+
+    function renderizarTodasTareas() {
+      const container = document.getElementById('listaTodasTareas');
+      container.innerHTML = '';
+      if (eventosCalendario.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-soft);">No hay tareas registradas.</p>';
+        return;
+      }
+      const ordenados = [...eventosCalendario].sort((a, b) => a.objetoFecha - b.objetoFecha);
+      ordenados.forEach((e, idx) => {
+        const card = document.createElement('div');
+        card.className = 'tarea-item-card';
+        card.style.borderLeftColor = e.color || '#2563eb';
+        card.innerHTML = `
+          <div class="tarea-item-header">
+            <h4>${e.nombre}</h4>
+            <span class="fecha-badge">📅 ${e.fecha} · ${e.hora || 'Todo el día'}</span>
+          </div>
+          <p class="tarea-item-desc">${e.descripcion || 'Sin descripción adicional.'}</p>
+          <div class="tarea-item-counter" id="itemCounter_${idx}" data-fecha="${e.objetoFecha.getTime()}"></div>
+        `;
+        container.appendChild(card);
+      });
+      actualizarContadoresListaTareas();
+    }
+
+    function actualizarContadoresListaTareas() {
+      const ahora = new Date();
+      document.querySelectorAll('.tarea-item-counter').forEach(c => {
+        const diff = parseInt(c.dataset.fecha) - ahora.getTime();
+        if (diff <= 0) {
+          c.innerHTML = '<span class="unit" style="color: #ef4444;">⏰ Finalizada / Pasada</span>';
+        } else {
+          const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+          c.innerHTML = `
+            <div class="unit"><span>${String(dias).padStart(2, '0')}</span>d</div>
+            <div class="unit"><span>${String(horas).padStart(2, '0')}</span>h</div>
+            <div class="unit"><span>${String(minutos).padStart(2, '0')}</span>m</div>
+            <div class="unit"><span>${String(segundos).padStart(2, '0')}</span>s</div>
+          `;
+        }
+      });
+    }
+
+    document.getElementById('btnVerTodasTareas').addEventListener('click', () => {
+      const cont = document.getElementById('listaTodasTareas');
+      const btn = document.getElementById('btnVerTodasTareas');
+      if (cont.style.display === 'none') {
+        cont.style.display = 'flex';
+        btn.textContent = '🙈 Ocultar Todas';
+      } else {
+        cont.style.display = 'none';
+        btn.textContent = '📋 Ver Todas las Tareas';
+      }
+    });
+
+    function aMinutos(hhmm) { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; }
+    function minutosAHHMM(min) { min = ((min % 1440) + 1440) % 1440; return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`; }
+
+    function franjaActual(minuto) {
+      for (let i = 0; i < franjas.length; i++) {
+        if (minuto >= aMinutos(franjas[i].ini) && minuto < aMinutos(franjas[i].fin)) return i;
+      }
+      return -1;
+    }
+
+    let simulando = false;
+    let horaSimulada = 510;
+    let diaSimulado = 1;
+
+    function ahora() {
+      if (simulando) return { fecha: new Date(), minuto: horaSimulada, dia: diaSimulado };
+      const d = new Date();
+      const diaSem = d.getDay();
+      return { fecha: d, minuto: d.getHours() * 60 + d.getMinutes(), dia: (diaSem >= 1 && diaSem <= 5) ? diaSem : null };
+    }
+
+    function buscarSiguienteClase(diaActual, idxActual, minActual) {
+      const diasNom = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      if (diaActual && diaActual >= 1 && diaActual <= 5) {
+        let inicioBúsqueda = (idxActual !== -1) ? idxActual + 1 : 0;
+        if (idxActual === -1 && minActual < aMinutos(franjas[0].ini)) inicioBúsqueda = 0;
+        for (let i = inicioBúsqueda; i < franjas.length; i++) {
+          if (minActual < aMinutos(franjas[i].ini) || idxActual !== -1) {
+            const asig = horario[diaActual][i];
+            if (asig && asig !== A.RECREO) return { dia: diaActual, idx: i, diaNombre: diasNom[diaActual], esMismoDia: true };
+          }
+        }
+      }
+      let diaIter = diaActual ? (diaActual % 7) + 1 : 1;
+      let contador = 0;
+      while (contador < 7) {
+        if (diaIter >= 1 && diaIter <= 5) {
+          for (let i = 0; i < franjas.length; i++) {
+            const asig = horario[diaIter][i];
+            if (asig && asig !== A.RECREO) return { dia: diaIter, idx: i, diaNombre: diasNom[diaIter], esMismoDia: false };
+          }
+        }
+        diaIter = (diaIter % 7) + 1; contador++;
+      }
+      return null;
+    }
+
+    function construirTabla() {
+      const cuerpo = document.getElementById('cuerpoHorario');
+      cuerpo.innerHTML = '';
+      franjas.forEach((f, idx) => {
+        const tr = document.createElement('tr');
+        const tdHora = document.createElement('td');
+        tdHora.className = 'hora-col';
+        tdHora.textContent = `${f.ini}\n${f.fin}`;
+        tdHora.style.whiteSpace = 'pre-line';
+        tr.appendChild(tdHora);
+        for (let dia = 1; dia <= 5; dia++) {
+          const td = document.createElement('td');
+          const asig = horario[dia][idx];
+          if (!asig) {
+            td.innerHTML = '<div class="asig" style="background:transparent;border:none;"></div>';
+          } else {
+            const profe = (asig === A.REFUERZO && profesRefuerzo[dia]) ? (profesRefuerzo[dia][idx-8]?.profe || '') : (asig.profe || '');
+            td.innerHTML = `<div class="asig ${asig.clase}" data-dia="${dia}" data-franja="${idx}">
+                <span class="nombre">${asig.corto || asig.nombre}</span>
+                ${profe ? `<span class="profe">${profe}</span>` : ''}
+              </div>`;
+          }
+          tr.appendChild(td);
+        }
+        cuerpo.appendChild(tr);
+      });
+    }
+
+    function actualizarResaltados() {
+      document.querySelectorAll('.asig').forEach(a => a.classList.remove('ahora', 'siguiente'));
+      const { minuto, dia } = ahora();
+      let idxActual = -1;
+      if (dia) idxActual = franjaActual(minuto);
+      const sig = buscarSiguienteClase(dia, idxActual, minuto);
+      const hayClaseAhora = dia && idxActual !== -1 && horario[dia][idxActual] && horario[dia][idxActual] !== A.RECREO;
+      if (hayClaseAhora) {
+        const el = document.querySelector(`.asig[data-dia="${dia}"][data-franja="${idxActual}"]`);
+        if (el) el.classList.add('ahora');
+      }
+      if (sig) {
+        const elSig = document.querySelector(`.asig[data-dia="${sig.dia}"][data-franja="${sig.idx}"]`);
+        if (elSig) elSig.classList.add('siguiente');
+      }
+      actualizarProfe(dia, idxActual);
+      actualizarResumen(dia, idxActual, sig, hayClaseAhora, minuto);
+    }
+
+    function actualizarProfe(dia, idx) {
+      const elementos = [
+        { nombre: document.getElementById('nombreProfe'), asig: document.getElementById('asigProfe'), info: document.getElementById('infoProfe') },
+        { nombre: document.getElementById('rsNombreProfe'), asig: document.getElementById('rsAsigProfe'), info: document.getElementById('rsInfoProfe') }
+      ];
+      const diasTxt = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+      elementos.forEach(el => {
+        if (!el.nombre) return;
+        if (!dia || idx === -1 || !horario[dia][idx] || horario[dia][idx] === A.RECREO) {
+          el.nombre.textContent = '—';
+          el.asig.textContent = 'Sin clase en este momento';
+          el.info.textContent = 'Fuera del horario lectivo';
+        } else {
+          const asig = horario[dia][idx];
+          const f = franjas[idx];
+          const profe = (asig === A.REFUERZO && profesRefuerzo[dia]) ? profesRefuerzo[dia][idx-8]?.profe : asig.profe;
+          el.nombre.textContent = profe || 'Profe';
+          el.asig.textContent = asig.nombre;
+          el.info.textContent = `${diasTxt[dia]} · ${f.ini} - ${f.fin}`;
+        }
+      });
+    }
+
+    function actualizarResumen(dia, idxActual, sig, hayClaseAhora, minuto) {
+      const diasTxt = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const d = new Date();
+      document.getElementById('rsHora').textContent = d.toLocaleTimeString();
+      document.getElementById('rsDia').textContent = diasTxt[d.getDay()];
+      document.getElementById('rsFecha').textContent = d.toLocaleDateString();
+
+      const cardAhora = document.getElementById('rsCardAhora');
+      const cardSig = document.getElementById('rsCardSig');
+      const headerAhora = document.getElementById('rsAhoraHeader');
+      const progressWrapper = document.getElementById('rsProgressWrapper');
+
+      const esRecreo = dia && idxActual !== -1 && horario[dia][idxActual] === A.RECREO;
+      const esTransicion = dia && idxActual === -1 && minuto >= aMinutos(franjas[0].ini) && minuto < aMinutos(franjas[franjas.length-1].fin);
+
+      if (esRecreo) {
+        cardAhora.style.display = 'flex';
+        headerAhora.textContent = '☕ RECREO / DESCANSO';
+        document.getElementById('rsAhoraTitulo').textContent = 'Tiempo Libre';
+        document.getElementById('rsAhoraProfe').textContent = '¡Tómate un descanso!';
+        const f = franjas[idxActual];
+        document.getElementById('rsAhoraHora').textContent = `${f.ini} - ${f.fin}`;
+        document.getElementById('rsProfeMini').style.display = 'none';
+        const iniM = aMinutos(f.ini), finM = aMinutos(f.fin);
+        const pct = Math.min(100, Math.max(0, ((minuto - iniM) / (finM - iniM)) * 100));
+        progressWrapper.style.display = 'block';
+        document.getElementById('rsProgressBar').style.width = `${pct}%`;
+        document.getElementById('rsProgressTxt').textContent = `${Math.round(pct)}% completado`;
+      } else if (esTransicion) {
+        cardAhora.style.display = 'flex';
+        headerAhora.textContent = '🔄 CAMBIO DE CLASE';
+        document.getElementById('rsAhoraTitulo').textContent = 'Transición entre períodos';
+        document.getElementById('rsAhoraProfe').textContent = 'Dirígete a tu siguiente aula';
+        document.getElementById('rsAhoraHora').textContent = 'En curso...';
+        document.getElementById('rsProfeMini').style.display = 'none';
+        progressWrapper.style.display = 'none';
+      } else if (hayClaseAhora) {
+        cardAhora.style.display = 'flex';
+        headerAhora.textContent = '📍 Clase Actual';
+        document.getElementById('rsProfeMini').style.display = 'flex';
+        const asig = horario[dia][idxActual];
+        const f = franjas[idxActual];
+        const profe = (asig === A.REFUERZO && profesRefuerzo[dia]) ? profesRefuerzo[dia][idxActual-8]?.profe : asig.profe;
+        document.getElementById('rsAhoraTitulo').textContent = asig.nombre;
+        document.getElementById('rsAhoraProfe').textContent = profe || '—';
+        document.getElementById('rsAhoraHora').textContent = `${f.ini} - ${f.fin}`;
+        document.getElementById('rsProfeMini').textContent = `👨‍🏫 ${profe || 'Profe'}`;
+        const iniM = aMinutos(f.ini), finM = aMinutos(f.fin);
+        const pct = Math.min(100, Math.max(0, ((minuto - iniM) / (finM - iniM)) * 100));
+        progressWrapper.style.display = 'block';
+        document.getElementById('rsProgressBar').style.width = `${pct}%`;
+        document.getElementById('rsProgressTxt').textContent = `${Math.round(pct)}% de la clase`;
+      } else {
+        cardAhora.style.display = 'none';
+        document.getElementById('rsProfeMini').style.display = 'none';
+        progressWrapper.style.display = 'none';
+      }
+
+      if (!sig) {
+        cardSig.style.display = 'none';
+      } else {
+        cardSig.style.display = 'flex';
+        const asig = horario[sig.dia][sig.idx];
+        const f = franjas[sig.idx];
+        const profe = (asig === A.REFUERZO && profesRefuerzo[sig.dia]) ? profesRefuerzo[sig.dia][sig.idx-8]?.profe : asig.profe;
+        document.getElementById('rsSigHeader').textContent = `⏭️ Siguiente Clase (${sig.diaNombre})`;
+        document.getElementById('rsSigTitulo').textContent = asig.nombre;
+        document.getElementById('rsSigProfe').textContent = profe || '—';
+        document.getElementById('rsSigHora').textContent = `${sig.diaNombre} · ${f.ini} - ${f.fin}`;
+      }
+    }
+
+    function actualizarReloj() {
+      const d = new Date();
+      document.getElementById('rjHora').textContent = String(d.getHours()).padStart(2, '0');
+      document.getElementById('rjMin').textContent = String(d.getMinutes()).padStart(2, '0');
+      document.getElementById('rjSeg').textContent = String(d.getSeconds()).padStart(2, '0');
+      const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+      document.getElementById('rjDiaSemana').textContent = dias[d.getDay()];
+      document.getElementById('rjFecha').textContent = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // CALENDARIO
+    let calFecha = new Date();
+    const selectMes = document.getElementById('calMesSelect');
+    const inputAno = document.getElementById('calAnoInput');
+
+    function syncCalControles() {
+      selectMes.value = calFecha.getMonth();
+      inputAno.value = calFecha.getFullYear();
+    }
+    selectMes.addEventListener('change', e => { calFecha.setMonth(parseInt(e.target.value)); pintarCal(); pintarMiniCal(); });
+    inputAno.addEventListener('change', e => {
+      const val = parseInt(e.target.value);
+      if (val >= 1900 && val <= 2100) { calFecha.setFullYear(val); pintarCal(); pintarMiniCal(); }
+    });
+    document.getElementById('calPrev').addEventListener('click', () => { calFecha.setMonth(calFecha.getMonth() - 1); syncCalControles(); pintarCal(); pintarMiniCal(); });
+    document.getElementById('calNext').addEventListener('click', () => { calFecha.setMonth(calFecha.getMonth() + 1); syncCalControles(); pintarCal(); pintarMiniCal(); });
+    document.getElementById('calHoy').addEventListener('click', () => { calFecha = new Date(); syncCalControles(); pintarCal(); pintarMiniCal(); });
+    document.getElementById('btnTodosCal').addEventListener('click', verTodosLosEventosModal);
+    document.getElementById('miniPrev').addEventListener('click', () => { calFecha.setMonth(calFecha.getMonth() - 1); syncCalControles(); pintarCal(); pintarMiniCal(); });
+    document.getElementById('miniNext').addEventListener('click', () => { calFecha.setMonth(calFecha.getMonth() + 1); syncCalControles(); pintarCal(); pintarMiniCal(); });
+
+    function pintarCal() {
+      const y = calFecha.getFullYear(), m = calFecha.getMonth();
+      syncCalControles();
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      const primerDia = new Date(y, m, 1);
+      const diasEnMes = new Date(y, m + 1, 0).getDate();
+      let offset = (primerDia.getDay() === 0) ? 6 : primerDia.getDay() - 1;
+      const hoy = new Date();
+      for (let i = offset - 1; i >= 0; i--) {
+        const dia = document.createElement('div');
+        dia.className = 'cal-dia otro-mes';
+        grid.appendChild(dia);
+      }
+      for (let i = 1; i <= diasEnMes; i++) {
+        const dia = document.createElement('div');
+        dia.className = 'cal-dia';
+        if (i === hoy.getDate() && m === hoy.getMonth() && y === hoy.getFullYear()) dia.classList.add('hoy');
+        const numSpan = document.createElement('span');
+        numSpan.textContent = i;
+        dia.appendChild(numSpan);
+        const fechaFormat = `${String(i).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
+        const evs = eventosCalendario.filter(e => e.fecha === fechaFormat);
+        if (evs.length > 0) {
+          const container = document.createElement('div');
+          container.className = 'eventos-container';
+          evs.forEach(e => {
+            const tag = document.createElement('div');
+            tag.className = 'evento-tag';
+            tag.style.background = e.color || '#2563eb';
+            tag.textContent = e.nombre;
+            tag.title = `${e.nombre} (${e.hora})`;
+            tag.style.cursor = 'pointer';
+            tag.addEventListener('click', ev => { ev.stopPropagation(); verDetalleEvento(e); });
+            container.appendChild(tag);
+          });
+          dia.appendChild(container);
+        }
+        grid.appendChild(dia);
+      }
+    }
+
+    function pintarMiniCal() {
+      const y = calFecha.getFullYear(), m = calFecha.getMonth();
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      document.getElementById('miniCalMes').textContent = `${meses[m]} ${y}`;
+      const grid = document.getElementById('miniCalGrid');
+      grid.innerHTML = '';
+      const primerDia = new Date(y, m, 1);
+      const diasEnMes = new Date(y, m + 1, 0).getDate();
+      let offset = (primerDia.getDay() === 0) ? 6 : primerDia.getDay() - 1;
+      const hoy = new Date();
+      for (let i = offset - 1; i >= 0; i--) {
+        const dia = document.createElement('div');
+        dia.className = 'mini-cal-dia otro-mes';
+        grid.appendChild(dia);
+      }
+      for (let i = 1; i <= diasEnMes; i++) {
+        const dia = document.createElement('div');
+        dia.className = 'mini-cal-dia';
+        if (i === hoy.getDate() && m === hoy.getMonth() && y === hoy.getFullYear()) dia.classList.add('hoy');
+        dia.textContent = i;
+        const fechaFormat = `${String(i).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`;
+        if (eventosCalendario.some(e => e.fecha === fechaFormat)) dia.classList.add('tiene-evento');
+        grid.appendChild(dia);
+      }
+    }
+
+    const modalEventos = document.getElementById('modalEventos');
+    const modalContenido = document.getElementById('modalContenido');
+    const modalTitulo = document.getElementById('modalTitulo');
+
+    function verDetalleEvento(e) {
+      modalTitulo.textContent = 'Detalles del Evento';
+      modalContenido.innerHTML = `
+        <div class="evento-item-card" style="border-left-color: ${e.color || '#2563eb'}">
+          <div class="info">
+            <h4>${e.nombre}</h4>
+            <p>${e.descripcion || 'Sin descripción'}</p>
+            <div class="meta">📅 ${e.fecha} &nbsp;|&nbsp; ⏰ ${e.hora || 'Todo el día'}</div>
+          </div>
+        </div>`;
+      modalEventos.classList.add('active');
+    }
+
+    function verTodosLosEventosModal() {
+      modalTitulo.textContent = '📅 Todas las Fechas y Eventos';
+      if (eventosCalendario.length === 0) {
+        modalContenido.innerHTML = '<p style="color: var(--text-soft);">No hay eventos o fechas registradas.</p>';
+      } else {
+        const ordenados = [...eventosCalendario].sort((a, b) => a.objetoFecha - b.objetoFecha);
+        modalContenido.innerHTML = ordenados.map(e => `
+          <div class="evento-item-card" style="border-left-color: ${e.color || '#2563eb'}">
+            <div class="info">
+              <h4>${e.nombre}</h4>
+              <p>${e.descripcion || 'Sin descripción'}</p>
+              <div class="meta">📅 ${e.fecha} &nbsp;|&nbsp; ⏰ ${e.hora || 'Todo el día'}</div>
+            </div>
+          </div>`).join('');
+      }
+      modalEventos.classList.add('active');
+    }
+
+    document.getElementById('btnCerrarModal').addEventListener('click', () => modalEventos.classList.remove('active'));
+
+    // CAMBIO DE PANTALLAS
+    const enlaces = document.querySelectorAll('[data-target]');
+    const pantallas = document.querySelectorAll('.pantalla');
+
+    function cambiarPantalla(target) {
+      pantallas.forEach(p => p.classList.remove('active'));
+      const nueva = document.getElementById(target);
+      if (nueva) nueva.classList.add('active');
+      document.querySelectorAll('.nav-links a').forEach(item => item.classList.toggle('active', item.dataset.target === target));
+      if (target === 'resumen') requestAnimationFrame(escalarResumen);
+      if (target === 'mecanografia') setTimeout(() => document.getElementById('mecInput').focus(), 100);
+    }
+
+    enlaces.forEach(enlace => enlace.addEventListener('click', () => cambiarPantalla(enlace.dataset.target)));
+
+    // SIMULADOR
+    const rangoHora = document.getElementById('rangoHora');
+    const btnSimular = document.getElementById('btnSimular');
+    rangoHora.addEventListener('input', () => {
+      horaSimulada = parseInt(rangoHora.value);
+      document.getElementById('horaSim').textContent = minutosAHHMM(horaSimulada);
+      if (simulando) actualizarResaltados();
+    });
+    btnSimular.addEventListener('click', () => {
+      simulando = !simulando;
+      if (simulando) {
+        diaSimulado = 1; horaSimulada = 510; rangoHora.value = 510;
+        document.getElementById('diaSim').textContent = 'LUN';
+        document.getElementById('horaSim').textContent = '08:30';
+      }
+      btnSimular.textContent = simulando ? '⏹️ Detener' : 'Activar simulación';
+      btnSimular.classList.toggle('activo', simulando);
+      document.getElementById('estadoSim').classList.toggle('visible', simulando);
+      actualizarResaltados();
+    });
+    document.getElementById('diaSim').addEventListener('click', () => {
+      diaSimulado = (diaSimulado % 5) + 1;
+      const dias = ['', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE'];
+      document.getElementById('diaSim').textContent = dias[diaSimulado];
+      if (simulando) actualizarResaltados();
+    });
+
+    // ALUMNOS
+    function pintarAlumnos() {
+      const crearGrid = () => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'alumnos-wrapper-img';
+        const colI = document.createElement('div');
+        colI.className = 'alumnos-col-img';
+        filasIzq.forEach(f => {
+          const divF = document.createElement('div');
+          divF.className = 'fila-alumnos';
+          f.forEach(n => divF.innerHTML += `<div class="alumno-img">${n}</div>`);
+          colI.appendChild(divF);
+        });
+        const colD = document.createElement('div');
+        colD.className = 'alumnos-col-img';
+        filasDer.forEach(f => {
+          const divF = document.createElement('div');
+          divF.className = 'fila-alumnos';
+          f.forEach(n => divF.innerHTML += `<div class="alumno-img">${n}</div>`);
+          colD.appendChild(divF);
+        });
+        wrapper.appendChild(colI); wrapper.appendChild(colD);
+        return wrapper;
+      };
+      ['alumnosCard', 'rsAlumnosCard'].forEach(id => {
+        const container = document.getElementById(id);
+        container.innerHTML = '<div class="profe-top-img"><div class="btn-profe-img">Profe</div></div>';
+        container.appendChild(crearGrid());
+      });
+    }
+
+    // ================= MECANOGRAFÍA =================
+    // Banco de textos: cada uno es un objeto { texto, nivel }
+    // Nivel: 1=fácil, 2=media, 3=difícil, 4=experto, 5=infierno
+    const TEXTOS_MEC = [
+      // ===== FÁCIL (sin tildes raras, frases simples) =====
+      { n: 1, t: "El sol brilla en el cielo azul y los pajaros cantan en el arbol." },
+      { n: 1, t: "Me gusta aprender cosas nuevas cada dia y practicar sin parar." },
+      { n: 1, t: "La casa tiene una puerta roja y un jardin muy grande y bonito." },
+      { n: 1, t: "Mi amigo come pan con queso mientras lee un libro de aventuras." },
+      { n: 1, t: "El gato duerme sobre la mesa mientras la lluvia cae despacio." },
+
+      // ===== MEDIA (con tildes y puntuación) =====
+      { n: 2, t: "La civilización maya desarrolló un sistema de escritura jeroglífica y un calendario asombrosamente preciso; sin embargo, sus ciudades fueron abandonadas por razones que aún hoy se debaten." },
+      { n: 2, t: "Aquel día, María decidió emprender un viaje por el sur de España: Sevilla, Córdoba y Granada la esperaban con sus calles estrechas, su historia y su arte." },
+      { n: 2, t: "El murciélago, mamífero volador por excelencia, utiliza la ecolocalización para orientarse en la oscuridad; emite ultrasonidos que rebotan y le indican dónde están los obstáculos." },
+      { n: 2, t: "Cuando el reloj marcó las doce, todos brindaron: \"¡Por los años que vendrán!\", dijo el abuelo con voz temblorosa, y todos rieron sin poder evitarlo." },
+      { n: 2, t: "La física cuántica estudia el comportamiento de partículas subatómicas; sus principios desafían la intuición, pues una partícula puede estar en dos estados a la vez." },
+
+      // ===== DIFÍCIL (puntuación compleja, comillas, guiones largos, ñ, diéresis) =====
+      { n: 3, t: "«No sé —respondió el joven— si deberíamos continuar; pero, pensándolo bien, ¿qué otra opción nos queda?» —preguntó, alzando una ceja con escepticismo—. «Ninguna», contesté yo." },
+      { n: 3, t: "El vergel de la abuela —con sus pingüinos de cerámica, sus geranios y aquel viejo reloj de péndulo— parecía detenido en una época remota; sin embargo, un extraño zumbido rompía el silencio cada atardecer." },
+      { n: 3, t: "Había una vez un pingüino llamado Íñigo que vivía en un pequeño iglú; un día, mientras observaba la aurora boreal, exclamó: «¡Qué espectáculo tan sobrecogedor, por Dios!»." },
+      { n: 3, t: "¿Sabías que el ruiseñor —ave famosa por su canto melódico— puede imitar hasta 80 sonidos distintos? ¡Es fascinante! Aunque, ciertamente, no todos los expertos lo confirman..." },
+      { n: 3, t: "La cigüeña sobrevoló el campanario: ¡cuánta paz! El niño, asombrado, susurró a su abuelo: «¿Volverá mañana?»; el anciano, sonriendo, respondió: «Quizá... o quizá no»." },
+
+      // ===== EXPERTO (símbolos, números, mezcla de signos, mayúsculas) =====
+      { n: 4, t: "El 25/12/2024, a las 23:59:59 h, se cerró el plazo de inscripción; coste: 149,95 € + IVA (21%). ¿Interesado? Escribe a info@ejemplo.com o llama al +34 986 123 456." },
+      { n: 4, t: "Para calcular el 15% de 2.450,00 € basta multiplicar: 2450 × 0,15 = 367,50 €. ¡Fácil! Pero ojo: si añadimos el 7,5% de comisión, la cosa cambia..." },
+      { n: 4, t: "Ruta 66 → Madrid–Toledo–Ciudad Real–Córdoba–Sevilla: 542 km; peaje ~38,40 €; gasolina ~55 €. ¿Vale la pena? ¡Sin duda! #RoadTrip2024 @viajeros" },
+      { n: 4, t: "El ADN tiene 4 bases: A–T, G–C. La fórmula del agua es H₂O; la del dióxido de carbono, CO₂. ¡Química y biología juntas! 100% real, no fake." },
+      { n: 4, t: "Programa en Python: def suma(a, b): return a + b. Luego: print(suma(3, 4)) # → 7. ¡Así de simple! ¿O no? (Cuidado con los tipos...)" },
+
+      // ===== INFIERNO (todo mezclado, trabalenguas, raros, signos extremos) =====
+      { n: 5, t: "«¡Ay, Íñigo! —exclamó Ñoño— ¿por qué, ¡por qué!, escribes con tanto ímpetu?»; el pingüino, impávido, replicó: «Porque el vértigo del éxito —según Nietzsche— exige un caos interior… ¡y yo lo tengo!»." },
+      { n: 5, t: "Tres tristes tigres tragaban trigo en un trigal; tres tristes tigres tragaban trigo: ¡qué trabalenguas! ¿O eran tres tigres tristes que tragaban trigo tras trigo? Tras tristes trigales, ¡tragaban, tragaban!" },
+      { n: 5, t: "El parangaricutirimícuaro se quiere desparangaricutirimicuarizar; quien lo desparangaricutirimicuarice, buen desparangaricutirimicuador será. ¡Vaya trabalenguas! ¿Te atreves a repetirlo 3 veces?" },
+      { n: 5, t: "En 1999, la UE (28 países: 24 idiomas) gastó 1.234.567,89 € en «programas piloto»; ¡un 12,5% más! ¿Por qué? Nadie lo sabe... #Misterio #UE #€uros" },
+      { n: 5, t: "Si ½ + ⅓ = ⅚, y ¾ × ⅔ = ½, entonces... ¿cuánto vale ⅚ ÷ ½? ¡Pues 5/3! ¿A que no lo sabías? ¡Las fracciones son un juego! 3,14159 ≈ π" }
+    ];
+
+    const mecWrap = document.getElementById('mecTextoWrap');
+    const mecInput = document.getElementById('mecInput');
+    const mecSelectDif = document.getElementById('mecDificultad');
+
+    let mecTextoActual = "";
+    let mecChars = [];       // array de <span> para cada carácter
+    let mecEstado = "listo"; // listo | corriendo | terminado
+    let mecInicio = 0;
+    let mecTimer = null;
+    let mecIdx = 0;          // índice del carácter actual
+    let mecCorrectos = 0;
+    let mecErrores = 0;
+    let mecFallosPorChar = []; // array con true/false por posición
+
+    function elegirTextoAleatorio() {
+      const nivel = parseInt(mecSelectDif.value === 'facil' ? 1
+                          : mecSelectDif.value === 'media' ? 2
+                          : mecSelectDif.value === 'dificil' ? 3
+                          : mecSelectDif.value === 'experto' ? 4
+                          : 5);
+      const pool = TEXTOS_MEC.filter(t => t.n === nivel);
+      return pool[Math.floor(Math.random() * pool.length)].t;
+    }
+
+    function pintarTexto(t) {
+      mecWrap.innerHTML = '';
+      mecChars = [];
+      t.split('').forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.className = 'ch pend';
+        // Para espacios, usamos un carácter especial visible al fallar
+        span.textContent = ch;
+        if (ch === ' ') span.dataset.esEspacio = '1';
+        mecWrap.appendChild(span);
+        mecChars.push(span);
+      });
+      // Añadimos un carácter final "invisible" por si el usuario termina justo
+    }
+
+    function marcarActual() {
+      mecChars.forEach((s, i) => {
+        s.classList.remove('actual');
+        if (i === mecIdx) s.classList.add('actual');
+      });
+    }
+
+    function resetMec(resetTexto = true) {
+      if (mecTimer) { clearInterval(mecTimer); mecTimer = null; }
+      mecEstado = "listo";
+      mecInicio = 0;
+      mecIdx = 0;
+      mecCorrectos = 0;
+      mecErrores = 0;
+      mecFallosPorChar = new Array(mecChars.length).fill(false);
+      mecInput.value = "";
+      mecInput.disabled = false;
+      mecResultado.classList.remove('visible');
+      mecChars.forEach(s => {
+        s.classList.remove('ok', 'err', 'actual', 'espacio-err');
+        s.classList.add('pend');
+      });
+      if (resetTexto) {
+        mecTextoActual = elegirTextoAleatorio();
+        pintarTexto(mecTextoActual);
+      }
+      marcarActual();
+      actualizarStatsMec();
+      actualizarProgresoMec();
+      if (document.getElementById('mecanografia').classList.contains('active')) {
+        mecInput.focus();
+      }
+    }
+
+    function actualizarStatsMec() {
+      document.getElementById('mecCorrectos').textContent = mecCorrectos;
+      document.getElementById('mecErrores').textContent = mecErrores;
+      const total = mecCorrectos + mecErrores;
+      const prec = total === 0 ? 100 : Math.round((mecCorrectos / total) * 100);
+      document.getElementById('mecPrecision').textContent = prec + '%';
+
+      // PPM
+      const minutos = mecInicio ? (Date.now() - mecInicio) / 60000 : 0;
+      const ppm = minutos > 0 ? Math.round((mecCorrectos / 5) / minutos) : 0;
+      document.getElementById('mecPPM').textContent = ppm;
+
+      // Tiempo
+      const segs = mecInicio ? Math.floor((Date.now() - mecInicio) / 1000) : 0;
+      document.getElementById('mecTiempo').textContent = formatearSegs(segs);
+    }
+
+    function formatearSegs(s) {
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return m > 0 ? `${m}m ${String(r).padStart(2,'0')}s` : `${r}s`;
+    }
+
+    function actualizarProgresoMec() {
+      document.getElementById('mecProgresoTxt').textContent = `${mecIdx} / ${mecChars.length} caracteres`;
+    }
+
+    function finalizarMec() {
+      mecEstado = "terminado";
+      if (mecTimer) { clearInterval(mecTimer); mecTimer = null; }
+      mecInput.disabled = true;
+      const minutos = mecInicio ? (Date.now() - mecInicio) / 60000 : 0.01;
+      const ppm = Math.round((mecCorrectos / 5) / minutos);
+      const total = mecCorrectos + mecErrores;
+      const prec = total === 0 ? 100 : Math.round((mecCorrectos / total) * 100);
+
+      document.getElementById('resPPM').textContent = ppm;
+      document.getElementById('resPrecision').textContent = prec + '%';
+      document.getElementById('resCorrectos').textContent = mecCorrectos;
+      document.getElementById('resErrores').textContent = mecErrores;
+      document.getElementById('resTiempo').textContent = formatearSegs(Math.floor((Date.now() - mecInicio) / 1000));
+
+      mecResultado.classList.add('visible');
+      actualizarStatsMec();
+    }
+
+    mecInput.addEventListener('input', () => {
+      const valor = mecInput.value;
+      if (mecEstado === "listo" && valor.length > 0) {
+        mecEstado = "corriendo";
+        mecInicio = Date.now();
+        mecTimer = setInterval(() => {
+          actualizarStatsMec();
+        }, 250);
+      }
+      if (mecEstado === "terminado") return;
+
+      // Sincronizamos con el texto objetivo
+      // Permitir que el usuario corrija: comparamos lo escrito con el texto
+      // Recorremos todo el texto escrito y marcamos cada carácter
+      for (let i = 0; i < mecChars.length; i++) {
+        const span = mecChars[i];
+        span.classList.remove('ok', 'err', 'espacio-err');
+        if (i < valor.length) {
+          if (valor[i] === mecTextoActual[i]) {
+            span.classList.add('ok');
+          } else {
+            if (mecTextoActual[i] === ' ') {
+              span.classList.add('espacio-err');
+            } else {
+              span.classList.add('err');
+            }
+          }
+        } else {
+          span.classList.add('pend');
+        }
+      }
+
+      // Recalculamos correctos/errores SOLO al avanzar (no por corrección)
+      // Contamos sobre el valor actual
+      let correctos = 0, errores = 0;
+      for (let i = 0; i < valor.length; i++) {
+        if (valor[i] === mecTextoActual[i]) correctos++;
+        else errores++;
+      }
+      mecCorrectos = correctos;
+      mecErrores = errores;
+      mecIdx = valor.length;
+
+      // Marcar actual
+      mecChars.forEach(s => s.classList.remove('actual'));
+      if (mecIdx < mecChars.length) {
+        mecChars[mecIdx].classList.add('actual');
+      }
+
+      actualizarStatsMec();
+      actualizarProgresoMec();
+
+      // ¿Terminado?
+      if (valor.length >= mecTextoActual.length) {
+        // Comprobamos si el texto coincide exactamente
+        if (valor === mecTextoActual) {
+          finalizarMec();
+        } else if (valor.length > mecTextoActual.length) {
+          // El usuario escribió de más: no permitimos
+          mecInput.value = valor.slice(0, mecTextoActual.length);
+        }
+      }
+
+      // Auto-scroll del texto objetivo
+      if (mecIdx < mecChars.length) {
+        const span = mecChars[mecIdx];
+        const rectSpan = span.getBoundingClientRect();
+        const rectWrap = mecWrap.getBoundingClientRect();
+        if (rectSpan.top < rectWrap.top || rectSpan.bottom > rectWrap.bottom) {
+          span.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      }
+    });
+
+    // Evitar pegar texto (para que no hagan trampas)
+    mecInput.addEventListener('paste', (e) => {
+      e.preventDefault();
+    });
+
+    // Atajos
+    mecInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        resetMec(true);
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        resetMec(true);
+      }
+    });
+
+    document.getElementById('mecNuevo').addEventListener('click', () => resetMec(true));
+    document.getElementById('mecReiniciar').addEventListener('click', () => resetMec(false));
+    mecSelectDif.addEventListener('change', () => resetMec(true));
+
+    // ================= INIT =================
+    async function init() {
+      construirTabla();
+      pintarAlumnos();
+      actualizarReloj();
+      // Iniciar mecanografía
+      resetMec(true);
+      await cargarFechasTXT();
+      actualizarResaltados();
+      escalarTodo();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(escalarTodo);
+      setInterval(() => {
+        actualizarReloj();
+        actualizarCuentaRegresiva();
+        if (!simulando) actualizarResaltados();
+      }, 1000);
+    }
+
+    init();
+  </script>
 </body>
 </html>
