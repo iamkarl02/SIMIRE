@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mecanografía · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 4px; }
+        .custom-scrollbar-main::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .char {
+            transition: color 0.1s ease;
+            word-break: break-word;
+        }
+        .char.correct { color: #34d399; }
+        .char.incorrect {
+            color: #f87171;
+            background-color: rgba(248, 113, 113, 0.15);
+            border-radius: 3px;
+        }
+        .char.current {
+            color: #ffffff;
+            background-color: rgba(99, 102, 241, 0.35);
+            border-radius: 3px;
+            animation: blink 1s ease-in-out infinite;
+        }
+        .char.pending { color: #64748b; }
+
+        @keyframes blink {
+            0%, 100% { background-color: rgba(99, 102, 241, 0.35); }
+            50% { background-color: rgba(99, 102, 241, 0.55); }
+        }
+
+        .level-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .level-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background-color: #334155;
+            border-radius: 999px;
+            transition: background-color 0.25s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .toggle-switch.active { background-color: #6366f1; }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .toggle-switch.active::after { transform: translateX(22px); }
+
+        /* Input de escritura */
+        #typingInput {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: transparent;
+            caret-color: transparent;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1px;
+            padding: 0;
+            margin: 0;
+            cursor: text;
+            z-index: 10;
+            resize: none;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        #typingInput::selection {
+            background: transparent;
+        }
+
+        .typing-wrapper { position: relative; }
+
+        /* Ajustes para que las frases largas se vean completas */
+        #phraseDisplay {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            line-height: 1.7;
+        }
+        .phrase-extremo {
+            font-size: 0.95rem !important;
+            line-height: 1.65 !important;
+            letter-spacing: 0.02em;
+        }
+        @media (min-width: 768px) {
+            .phrase-extremo {
+                font-size: 1.15rem !important;
+            }
+        }
+        @media (min-width: 1024px) {
+            .phrase-extremo {
+                font-size: 1.35rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl shrink-0">
+        
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-indigo-400"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/10 via-transparent to-violet-950/10 pointer-events-none"></div>
+        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 min-h-full flex items-center justify-center p-8">
+            
+            <div class="w-full max-w-5xl">
+
+                <!-- PANTALLA DE SELECCIÓN DE NIVEL -->
+                <div id="levelSelection" class="text-center">
+                    
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 flex items-center justify-center gap-3">
+                        <i class="ph ph-keyboard text-indigo-400"></i>
+                        Mecanografía
+                    </h2>
+                    <p class="text-slate-400 text-sm md:text-base mb-12">Elige un nivel para practicar tu velocidad de escritura</p>
+
+                    <!-- Botones de nivel -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 max-w-4xl mx-auto mb-10">
+                        
+                        <button onclick="startLevel('facil')" class="level-btn bg-emerald-950/40 border border-emerald-900/50 hover:border-emerald-500/60 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 shadow-lg hover:shadow-emerald-500/20">
+                            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                                <i class="ph ph-feather text-emerald-400 text-2xl"></i>
+                            </div>
+                            <span class="text-lg font-bold text-emerald-200">Fácil</span>
+                            <span class="text-[11px] text-emerald-400/70 uppercase tracking-widest font-bold">Frases cortas</span>
+                        </button>
+
+                        <button onclick="startLevel('normal')" class="level-btn bg-sky-950/40 border border-sky-900/50 hover:border-sky-500/60 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 shadow-lg hover:shadow-sky-500/20">
+                            <div class="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+                                <i class="ph ph-text-t text-sky-400 text-2xl"></i>
+                            </div>
+                            <span class="text-lg font-bold text-sky-200">Normal</span>
+                            <span class="text-[11px] text-sky-400/70 uppercase tracking-widest font-bold">Frases medias</span>
+                        </button>
+
+                        <button onclick="startLevel('dificil')" class="level-btn bg-amber-950/40 border border-amber-900/50 hover:border-amber-500/60 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 shadow-lg hover:shadow-amber-500/20">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+                                <i class="ph ph-fire text-amber-400 text-2xl"></i>
+                            </div>
+                            <span class="text-lg font-bold text-amber-200">Difícil</span>
+                            <span class="text-[11px] text-amber-400/70 uppercase tracking-widest font-bold">Texto técnico</span>
+                        </button>
+
+                        <button onclick="startLevel('extremo')" class="level-btn bg-rose-950/40 border border-rose-900/50 hover:border-rose-500/60 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 shadow-lg hover:shadow-rose-500/20">
+                            <div class="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+                                <i class="ph ph-lightning text-rose-400 text-2xl"></i>
+                            </div>
+                            <span class="text-lg font-bold text-rose-200">Extremo</span>
+                            <span class="text-[11px] text-rose-400/70 uppercase tracking-widest font-bold">Texto avanzado</span>
+                        </button>
+                    </div>
+
+                    <!-- Toggle No retroceder -->
+                    <div class="flex items-center justify-center">
+                        <div class="flex items-center gap-4 bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl px-6 py-4">
+                            <i class="ph ph-arrow-u-up-left text-slate-400 text-2xl"></i>
+                            <div class="text-left">
+                                <p class="text-sm font-bold text-slate-200 leading-tight">No retroceder</p>
+                                <p class="text-[11px] text-slate-500 leading-tight">Bloquea el borrado de errores</p>
+                            </div>
+                            <div id="noBackToggle" class="toggle-switch active" onclick="toggleNoBack()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANTALLA DE ESCRITURA -->
+                <div id="typingScreen" class="hidden">
+                    
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="exitToLevels()" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                                <i class="ph ph-arrow-left text-lg"></i>
+                            </button>
+                            <div>
+                                <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Nivel</p>
+                                <p id="currentLevelLabel" class="text-base font-bold text-white">Fácil</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 md:gap-10">
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">PPM</p>
+                                <p id="statPPM" class="text-2xl font-extrabold text-indigo-400 tabular-nums">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Precisión</p>
+                                <p id="statAccuracy" class="text-2xl font-extrabold text-emerald-400 tabular-nums">100%</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Errores</p>
+                                <p id="statErrors" class="text-2xl font-extrabold text-rose-400 tabular-nums">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Tiempo</p>
+                                <p id="statTime" class="text-2xl font-extrabold text-white tabular-nums">0s</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Área de la frase con el input real encima -->
+                    <div class="typing-wrapper">
+                        <div class="bg-[#0d0d11]/70 border border-slate-900/60 rounded-3xl p-10 md:p-14 mb-6 no-select relative">
+                            <p id="phraseDisplay" class="mono text-xl md:text-2xl lg:text-3xl leading-relaxed tracking-wide text-slate-500 pointer-events-none"></p>
+                            <input type="text" id="typingInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        </div>
+                    </div>
+
+                    <p class="text-center text-xs text-slate-500 mt-2">Escribe directamente, el cursor ya está activo</p>
+                </div>
+
+                <!-- PANTALLA DE RESULTADOS -->
+                <div id="resultScreen" class="hidden text-center">
+                    
+                    <div class="mb-8">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+                            <i class="ph ph-check-circle text-emerald-400 text-4xl"></i>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">¡Completado!</h2>
+                        <p class="text-slate-400 text-sm">Aquí están tus resultados</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-10">
+                        <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6">
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">PPM</p>
+                            <p id="finalPPM" class="text-4xl font-extrabold text-indigo-400 tabular-nums">0</p>
+                        </div>
+                        <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6">
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">Precisión</p>
+                            <p id="finalAccuracy" class="text-4xl font-extrabold text-emerald-400 tabular-nums">0%</p>
+                        </div>
+                        <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6">
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">Errores</p>
+                            <p id="finalErrors" class="text-4xl font-extrabold text-rose-400 tabular-nums">0</p>
+                        </div>
+                        <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6">
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">Tiempo</p>
+                            <p id="finalTime" class="text-4xl font-extrabold text-white tabular-nums">0s</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-4">
+                        <button onclick="repeatLevel()" class="px-6 py-3 bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 rounded-xl text-sm font-bold text-indigo-300 transition-all flex items-center gap-2">
+                            <i class="ph ph-arrows-clockwise text-lg"></i>
+                            Otra frase
+                        </button>
+                        <button onclick="exitToLevels()" class="px-6 py-3 bg-[#0d0d11]/60 border border-slate-900/60 hover:border-slate-700 rounded-xl text-sm font-bold text-slate-300 transition-all flex items-center gap-2">
+                            <i class="ph ph-list text-lg"></i>
+                            Cambiar nivel
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== PROTECCIÓN ANTI-COPIA ==========
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.typing-wrapper')) e.preventDefault();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                const key = e.key.toLowerCase();
+                if (['c', 'x', 'a', 'u', 's', 'p'].includes(key)) {
+                    if (document.activeElement === typingInput || document.activeElement === document.body) {
+                        e.preventDefault();
+                    }
+                }
+            }
+            if (e.key === 'F12') e.preventDefault();
+        });
+
+        // ========== VARIABLES ==========
+        let allPhrases = {};
+        let currentLevel = null;
+        let currentPhrase = '';
+        let currentIndex = 0;
+        let errors = 0;
+        let correctChars = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let finished = false;
+        let noBackMode = true;
+
+        const typingInput = document.getElementById('typingInput');
+
+        // ========== TOGGLE ==========
+        function toggleNoBack() {
+            noBackMode = !noBackMode;
+            const toggle = document.getElementById('noBackToggle');
+            if (noBackMode) toggle.classList.add('active');
+            else toggle.classList.remove('active');
+        }
+
+        // ========== CARGAR FRASES ==========
+        async function loadPhrases() {
+            try {
+                const response = await fetch('mecanografia.txt');
+                if (!response.ok) throw new Error('No se encontró mecanografia.txt');
+                const text = await response.text();
+
+                const levels = { facil: [], normal: [], dificil: [], extremo: [] };
+
+                text.split('\n').forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed.startsWith('#')) return;
+                    const idx = trimmed.indexOf('|');
+                    if (idx === -1) return;
+                    const level = trimmed.slice(0, idx).trim().toLowerCase();
+                    const phrase = trimmed.slice(idx + 1).trim();
+                    if (levels[level] && phrase) levels[level].push(phrase);
+                });
+
+                allPhrases = levels;
+                const total = Object.values(levels).reduce((sum, arr) => sum + arr.length, 0);
+                if (total === 0) loadFallbackPhrases();
+            } catch (err) {
+                console.warn('Error al cargar mecanografia.txt:', err.message);
+                loadFallbackPhrases();
+            }
+        }
+
+        function loadFallbackPhrases() {
+            allPhrases = {
+                facil: [
+                    'El sol brilla en el cielo azul.',
+                    'La casa tiene una puerta grande.',
+                    'Mi perro corre por el parque.'
+                ],
+                normal: [
+                    'Ayer fui al cine con mis amigos y vimos una pelicula muy divertida.',
+                    'El ordenador que compramos la semana pasada funciona muy rapido.'
+                ],
+                dificil: [
+                    'El desarrollo de software moderno exige conocer multiples lenguajes de programacion.',
+                    'La ciberseguridad es fundamental en las empresas actuales.'
+                ],
+                extremo: [
+                    'La implementacion de politicas de seguridad informatica en entornos corporativos requiere un analisis exhaustivo.',
+                    'El diseno de arquitecturas de microservicios implica descomponer aplicaciones monoliticas en servicios independientes.'
+                ]
+            };
+        }
+
+        // ========== SELECCIÓN DE FRASE ALEATORIA SIN REPETIR ==========
+        function pickRandomPhrase(level, excludePhrase) {
+            const phrases = allPhrases[level];
+            if (!phrases || phrases.length === 0) return '';
+            if (phrases.length === 1) return phrases[0];
+
+            let candidate = phrases[Math.floor(Math.random() * phrases.length)];
+            let attempts = 0;
+            // Evitar repetir la misma frase (máximo 20 intentos para no bloquear)
+            while (candidate === excludePhrase && attempts < 20) {
+                candidate = phrases[Math.floor(Math.random() * phrases.length)];
+                attempts++;
+            }
+            return candidate;
+        }
+
+        // ========== INICIAR NIVEL ==========
+        function startLevel(level) {
+            if (!allPhrases[level] || allPhrases[level].length === 0) {
+                alert('No hay frases para este nivel. Revisa mecanografia.txt');
+                return;
+            }
+
+            currentLevel = level;
+            const labels = { facil: 'Fácil', normal: 'Normal', dificil: 'Difícil', extremo: 'Extremo' };
+            document.getElementById('currentLevelLabel').textContent = labels[level];
+
+            // Elegir frase evitando la anterior (si existe)
+            const prevPhrase = currentPhrase;
+            currentPhrase = pickRandomPhrase(level, prevPhrase);
+
+            document.getElementById('levelSelection').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('typingScreen').classList.remove('hidden');
+
+            renderPhrase();
+            resetStats();
+            typingInput.value = '';
+            typingInput.disabled = false;
+
+            // Foco automático
+            setTimeout(() => typingInput.focus(), 50);
+        }
+
+        // ========== RENDERIZAR ==========
+        function renderPhrase() {
+            const display = document.getElementById('phraseDisplay');
+            display.innerHTML = '';
+
+            // Resetear clases de tamaño y aplicar la adecuada según nivel
+            display.classList.remove('phrase-extremo');
+            if (currentLevel === 'extremo') {
+                display.classList.add('phrase-extremo');
+            }
+
+            for (let i = 0; i < currentPhrase.length; i++) {
+                const span = document.createElement('span');
+                span.className = 'char';
+                const ch = currentPhrase[i];
+                span.textContent = ch === ' ' ? '\u00A0' : ch;
+                if (i < currentIndex) span.classList.add('correct');
+                else if (i === currentIndex) span.classList.add('current');
+                else span.classList.add('pending');
+                display.appendChild(span);
+            }
+        }
+
+        function updateCharStyles() {
+            const chars = document.querySelectorAll('#phraseDisplay .char');
+            chars.forEach((span, i) => {
+                if (span.classList.contains('incorrect')) return;
+
+                span.classList.remove('correct', 'current', 'pending');
+                if (i < currentIndex) span.classList.add('correct');
+                else if (i === currentIndex) span.classList.add('current');
+                else span.classList.add('pending');
+            });
+        }
+
+        // ========== RESET ==========
+        function resetStats() {
+            currentIndex = 0;
+            errors = 0;
+            correctChars = 0;
+            startTime = null;
+            finished = false;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('statPPM').textContent = '0';
+            document.getElementById('statAccuracy').textContent = '100%';
+            document.getElementById('statErrors').textContent = '0';
+            document.getElementById('statTime').textContent = '0s';
+        }
+
+        // ========== TIMER ==========
+        function startTimer() {
+            if (startTime) return;
+            startTime = Date.now();
+            timerInterval = setInterval(updateLiveStats, 200);
+        }
+
+        function updateLiveStats() {
+            if (!startTime || finished) return;
+            const elapsedSec = (Date.now() - startTime) / 1000;
+            const minutes = elapsedSec / 60;
+            const ppm = minutes > 0 ? Math.round((correctChars / 5) / minutes) : 0;
+            const totalTyped = correctChars + errors;
+            const accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+            document.getElementById('statPPM').textContent = ppm;
+            document.getElementById('statAccuracy').textContent = accuracy + '%';
+            document.getElementById('statErrors').textContent = errors;
+            document.getElementById('statTime').textContent = Math.floor(elapsedSec) + 's';
+        }
+
+        // ========== ENTRADA DE TEXTO ==========
+        typingInput.addEventListener('input', (e) => {
+            if (finished) {
+                typingInput.value = '';
+                return;
+            }
+            if (!startTime) startTimer();
+
+            const value = typingInput.value;
+            if (value.length === 0) return;
+
+            const lastChar = value[value.length - 1];
+            const expected = currentPhrase[currentIndex];
+
+            // Limpiar input para evitar acumulación
+            typingInput.value = '';
+
+            if (lastChar === expected) {
+                correctChars++;
+                currentIndex++;
+            } else {
+                errors++;
+                const chars = document.querySelectorAll('#phraseDisplay .char');
+                if (chars[currentIndex]) {
+                    chars[currentIndex].classList.remove('correct', 'current', 'pending');
+                    chars[currentIndex].classList.add('incorrect');
+                }
+                currentIndex++;
+            }
+
+            updateCharStyles();
+            updateLiveStats();
+
+            if (currentIndex >= currentPhrase.length) {
+                finishTyping();
+            }
+        });
+
+        // ========== BACKSPACE (BORRADO) ==========
+        typingInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                if (noBackMode) {
+                    e.preventDefault();
+                } else {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        const chars = document.querySelectorAll('#phraseDisplay .char');
+                        const prevChar = chars[currentIndex];
+                        if (prevChar && prevChar.classList.contains('incorrect')) {
+                            errors = Math.max(0, errors - 1);
+                            prevChar.classList.remove('incorrect');
+                        } else {
+                            correctChars = Math.max(0, correctChars - 1);
+                            prevChar.classList.remove('correct');
+                        }
+                        updateCharStyles();
+                        updateLiveStats();
+                    }
+                }
+            }
+            if (e.key === 'Delete' && noBackMode) {
+                e.preventDefault();
+            }
+        });
+
+        // ========== FINALIZAR ==========
+        function finishTyping() {
+            finished = true;
+            if (timerInterval) clearInterval(timerInterval);
+
+            const elapsedSec = (Date.now() - startTime) / 1000;
+            const minutes = elapsedSec / 60;
+            const ppm = minutes > 0 ? Math.round((correctChars / 5) / minutes) : 0;
+            const totalTyped = correctChars + errors;
+            const accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+            document.getElementById('finalPPM').textContent = ppm;
+            document.getElementById('finalAccuracy').textContent = accuracy + '%';
+            document.getElementById('finalErrors').textContent = errors;
+            document.getElementById('finalTime').textContent = Math.floor(elapsedSec) + 's';
+
+            document.getElementById('typingScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+        }
+
+        // ========== REPETIR NIVEL (forzar frase distinta) ==========
+        function repeatLevel() {
+            if (currentLevel) {
+                // startLevel ya evita repetir la frase anterior porque
+                // compara contra currentPhrase (que sigue siendo la anterior aquí)
+                startLevel(currentLevel);
+            }
+        }
+
+        // ========== SALIR A NIVELES (reset completo) ==========
+        function exitToLevels() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            finished = true;
+            typingInput.value = '';
+            typingInput.disabled = true;
+
+            // Resetear todo el estado para que al volver a entrar empiece limpio
+            currentPhrase = '';
+            currentIndex = 0;
+            errors = 0;
+            correctChars = 0;
+            startTime = null;
+
+            document.getElementById('typingScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('levelSelection').classList.remove('hidden');
+        }
+
+        // ========== INICIALIZAR ==========
+        loadPhrases();
+    </script>
+
+</body>
+</html>

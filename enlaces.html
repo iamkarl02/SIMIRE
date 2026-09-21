@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enlaces · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e1e24;
+            border-radius: 4px;
+        }
+        .custom-scrollbar-main::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar-main::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb {
+            background: #1e1e24;
+            border-radius: 6px;
+        }
+        .link-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .link-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+        .link-card:hover .link-icon {
+            transform: scale(1.1);
+        }
+        .link-icon {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl">
+        
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <!-- Productividad -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recursos (con Enlaces activo) -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-indigo-400"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Herramientas -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Juegos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sistema -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL: ENLACES -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <!-- Fondo decorativo -->
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/10 via-transparent to-violet-950/10 pointer-events-none"></div>
+
+        <div class="relative z-10 p-8 max-w-7xl mx-auto">
+            
+            <!-- Título -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                    <i class="ph ph-share-network text-indigo-400"></i>
+                    Enlaces útiles
+                </h2>
+                <p class="text-slate-400 mt-2 text-sm">Accesos directos a las herramientas y servicios que usamos en clase</p>
+            </div>
+
+            <!-- ============ GOOGLE WORKSPACE ============ -->
+            <section class="mb-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-red-500 flex items-center justify-center text-white shadow-md">
+                        <i class="ph-bold ph-google-logo text-sm"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-wide">Google Workspace</h3>
+                    <span class="text-xs text-slate-500 font-medium">· Oficina completa</span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    
+                    <a href="https://docs.google.com/document/u/0/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-file-text text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Docs</p>
+                            <p class="text-[11px] text-slate-500 truncate">Documentos</p>
+                        </div>
+                    </a>
+
+                    <a href="https://docs.google.com/spreadsheets/u/0/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-table text-emerald-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Sheets</p>
+                            <p class="text-[11px] text-slate-500 truncate">Hojas de cálculo</p>
+                        </div>
+                    </a>
+
+                    <a href="https://docs.google.com/presentation/u/0/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-presentation text-amber-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Slides</p>
+                            <p class="text-[11px] text-slate-500 truncate">Presentaciones</p>
+                        </div>
+                    </a>
+
+                    <a href="https://drive.google.com/drive/u/0/my-drive" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-hard-drives text-indigo-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Drive</p>
+                            <p class="text-[11px] text-slate-500 truncate">Almacenamiento</p>
+                        </div>
+                    </a>
+
+                    <a href="https://mail.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-envelope-simple text-rose-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Gmail</p>
+                            <p class="text-[11px] text-slate-500 truncate">Correo</p>
+                        </div>
+                    </a>
+
+                    <a href="https://calendar.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-calendar-dots text-sky-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Calendar</p>
+                            <p class="text-[11px] text-slate-500 truncate">Calendario</p>
+                        </div>
+                    </a>
+
+                    <a href="https://meet.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-video-camera text-green-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Meet</p>
+                            <p class="text-[11px] text-slate-500 truncate">Videollamadas</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-chalkboard text-yellow-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Classroom</p>
+                            <p class="text-[11px] text-slate-500 truncate">Clases</p>
+                        </div>
+                    </a>
+
+                    <a href="https://docs.google.com/forms/u/0/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-list-dashes text-purple-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Forms</p>
+                            <p class="text-[11px] text-slate-500 truncate">Formularios</p>
+                        </div>
+                    </a>
+
+                    <a href="https://keep.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-note text-yellow-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Keep</p>
+                            <p class="text-[11px] text-slate-500 truncate">Notas</p>
+                        </div>
+                    </a>
+
+                    <a href="https://photos.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-image text-pink-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Photos</p>
+                            <p class="text-[11px] text-slate-500 truncate">Fotos</p>
+                        </div>
+                    </a>
+
+                    <a href="https://translate.google.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-translate text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Google Translate</p>
+                            <p class="text-[11px] text-slate-500 truncate">Traductor</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ============ CLASES DEL CURSO ============ -->
+            <section class="mb-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center text-yellow-400 shadow-md">
+                        <i class="ph-bold ph-chalkboard text-sm"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-wide">Clases del curso</h3>
+                    <span class="text-xs text-slate-500 font-medium">· Aulas virtuales de Google Classroom</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    
+                    <a href="https://classroom.google.com/c/ODg0MTQzNzM1NTEw" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-book-open text-indigo-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">IPE 1 26-27</p>
+                            <p class="text-[11px] text-slate-500 truncate">Itinerario Personal para la Empleabilidad</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODI2NDIwMTY2MTQ2" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-leaf text-emerald-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Sostenibilidad Aplicada</p>
+                            <p class="text-[11px] text-slate-500 truncate">al Sistema Productivo</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc4NDU3Njg0NTQ1" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-heartbeat text-rose-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">SOM 26-27</p>
+                            <p class="text-[11px] text-slate-500 truncate">Sostenibilidad y Salud Laboral</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc2MDk1ODA5OTY0" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-briefcase text-sky-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Aplicaciones Ofimáticas</p>
+                            <p class="text-[11px] text-slate-500 truncate">26-27</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc3ODMzMzc5NzU2" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-cpu text-amber-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">MME 26/27</p>
+                            <p class="text-[11px] text-slate-500 truncate">Mantenimiento de Equipos</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc0NDI5ODEzNjM5" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-network text-cyan-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Redes Locais</p>
+                            <p class="text-[11px] text-slate-500 truncate">MP0225</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc4MDUxNjYwNjMw" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-violet-500/10 border border-violet-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-buildings text-violet-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Gestión 1CMI</p>
+                            <p class="text-[11px] text-slate-500 truncate">26-27</p>
+                        </div>
+                    </a>
+
+                    <a href="https://classroom.google.com/c/ODc4MTk1NjU1NDgx" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-translate text-red-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Inglés Profesional</p>
+                            <p class="text-[11px] text-slate-500 truncate">1º SIMIRE</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ============ CANVA ============ -->
+            <section class="mb-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center text-white shadow-md">
+                        <i class="ph-bold ph-paint-brush text-sm"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-wide">Diseño</h3>
+                    <span class="text-xs text-slate-500 font-medium">· Herramientas creativas</span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    
+                    <a href="https://www.canva.com/" target="_blank" class="link-card bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-4 flex items-center gap-3">
+                        <div class="link-icon w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                            <i class="ph ph-paint-brush text-cyan-400 text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white truncate">Canva</p>
+                            <p class="text-[11px] text-slate-500 truncate">Diseño gráfico</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white',

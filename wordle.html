@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 4px; }
+        .custom-scrollbar-main::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .level-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .level-btn:hover { transform: translateY(-3px); }
+
+        /* Tablero dinámico: las columnas se generan por JS */
+        .wordle-board {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 6px;
+            margin: 0 auto;
+            width: fit-content;
+        }
+        .wordle-row {
+            display: grid;
+            gap: 6px;
+        }
+        .wordle-cell {
+            /* El tamaño se ajusta por JS según la longitud */
+            width: var(--cell-size, 56px);
+            height: var(--cell-size, 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: calc(var(--cell-size, 56px) * 0.5);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #e2e8f0;
+            background-color: #0d0d11;
+            border: 2px solid #1e1e24;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .wordle-cell.filled {
+            border-color: #334155;
+            animation: pop 0.1s ease;
+        }
+        .wordle-cell.correct {
+            background-color: #34d399;
+            border-color: #34d399;
+            color: #030304;
+        }
+        .wordle-cell.present {
+            background-color: #fbbf24;
+            border-color: #fbbf24;
+            color: #030304;
+        }
+        .wordle-cell.absent {
+            background-color: #1e1e24;
+            border-color: #1e1e24;
+            color: #64748b;
+        }
+        .wordle-cell.reveal {
+            animation: flip 0.5s ease forwards;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        @keyframes flip {
+            0% { transform: rotateX(0); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0); }
+        }
+
+        /* Teclado virtual */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .keyboard-row {
+            display: flex;
+            gap: 4px;
+        }
+        .key {
+            min-width: var(--key-size, 34px);
+            height: var(--key-size, 46px);
+            padding: 0 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: calc(var(--key-size, 34px) * 0.42);
+            text-transform: uppercase;
+            background-color: #1e1e24;
+            color: #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+        }
+        .key:hover { background-color: #2a2a35; }
+        .key:active { transform: scale(0.95); }
+        .key.wide {
+            min-width: calc(var(--key-size, 34px) * 1.7);
+            font-size: calc(var(--key-size, 34px) * 0.36);
+        }
+        .key.correct { background-color: #34d399; color: #030304; }
+        .key.present { background-color: #fbbf24; color: #030304; }
+        .key.absent { background-color: #0a0a0c; color: #475569; }
+
+        #toast {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        .pop-anim { animation: popBig 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes popBig {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .shake { animation: shakeX 0.4s ease; }
+        @keyframes shakeX {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl shrink-0">
+        
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-indigo-400"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/10 via-transparent to-violet-950/10 pointer-events-none"></div>
+        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 min-h-full flex flex-col items-center justify-center p-8">
+            
+            <div class="w-full max-w-3xl">
+
+                <!-- PANTALLA DE INICIO -->
+                <div id="startScreen" class="text-center">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 flex items-center justify-center gap-3">
+                        <i class="ph ph-text-aa text-indigo-400"></i>
+                        Wordle
+                    </h2>
+                    <p class="text-slate-400 text-sm md:text-base mb-12">Adivina la palabra oculta en 6 intentos</p>
+
+                    <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6 mb-8 max-w-lg mx-auto text-left">
+                        <p class="text-xs font-bold tracking-widest text-slate-500 uppercase mb-4 text-center">Cómo jugar</p>
+                        <ul class="space-y-3 text-sm text-slate-400">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded bg-emerald-500 flex-shrink-0 mt-0.5"></div>
+                                <span>La letra está en la palabra y en la posición correcta.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded bg-amber-500 flex-shrink-0 mt-0.5"></div>
+                                <span>La letra está en la palabra pero en otra posición.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded bg-slate-800 flex-shrink-0 mt-0.5"></div>
+                                <span>La letra no está en la palabra.</span>
+                            </li>
+                        </ul>
+                        <p class="text-[11px] text-slate-500 mt-5 pt-5 border-t border-slate-900/60 text-center">
+                            La longitud de la palabra cambia según la que toque 😉
+                        </p>
+                    </div>
+
+                    <button onclick="startGame()" class="px-8 py-3 bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 rounded-xl text-sm font-bold text-indigo-300 transition-all flex items-center gap-2 mx-auto">
+                        <i class="ph ph-play text-lg"></i>
+                        Jugar
+                    </button>
+                </div>
+
+                <!-- PANTALLA DE JUEGO -->
+                <div id="gameScreen" class="hidden flex-col items-center">
+                    
+                    <div class="flex items-center justify-between w-full mb-6">
+                        <button onclick="exitToStart()" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                            <i class="ph ph-arrow-left text-lg"></i>
+                        </button>
+                        <div class="text-center">
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Intentos</p>
+                            <p id="statAttempts" class="text-base font-bold text-white tabular-nums">0 / 6</p>
+                            <p id="statLength" class="text-[10px] text-slate-500 mt-0.5">Longitud: 0</p>
+                        </div>
+                        <button onclick="startGame()" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                            <i class="ph ph-arrows-clockwise text-lg"></i>
+                        </button>
+                    </div>
+
+                    <div id="wordleBoard" class="wordle-board"></div>
+
+                    <div id="keyboard" class="keyboard"></div>
+
+                    <!-- Mensaje toast -->
+                    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 -translate-y-full opacity-0 bg-white text-slate-900 font-bold text-sm px-5 py-2.5 rounded-xl shadow-2xl z-50 pointer-events-none"></div>
+                </div>
+
+                <!-- PANTALLA DE FIN -->
+                <div id="endScreen" class="hidden text-center">
+                    
+                    <div class="pop-anim mb-8">
+                        <div id="endIconWrap" class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6">
+                            <i id="endIcon" class="ph ph-trophy text-emerald-400 text-4xl"></i>
+                        </div>
+                        <h2 id="endTitle" class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">¡Has ganado!</h2>
+                        <p id="endSubtitle" class="text-slate-400 text-sm">Has acertado la palabra</p>
+                    </div>
+
+                    <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-6 max-w-2xl mx-auto mb-10">
+                        <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-3">La palabra era</p>
+                        <p id="finalWord" class="mono text-3xl font-extrabold text-indigo-300 uppercase tracking-widest break-all">—</p>
+                    </div>
+
+                    <div class="flex items-center justify-center gap-4">
+                        <button onclick="startGame()" class="px-6 py-3 bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 rounded-xl text-sm font-bold text-indigo-300 transition-all flex items-center gap-2">
+                            <i class="ph ph-arrows-clockwise text-lg"></i>
+                            Otra palabra
+                        </button>
+                        <button onclick="exitToStart()" class="px-6 py-3 bg-[#0d0d11]/60 border border-slate-900/60 hover:border-slate-700 rounded-xl text-sm font-bold text-slate-300 transition-all flex items-center gap-2">
+                            <i class="ph ph-house text-lg"></i>
+                            Inicio
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== VARIABLES ==========
+        let words = [];
+        let targetWord = '';
+        let wordLength = 5;       // Se actualiza al iniciar la partida
+        let currentRow = 0;
+        let currentCol = 0;
+        let currentGuess = '';
+        let gameOver = false;
+        let keyState = {};
+        const MAX_ROWS = 6;
+
+        // ========== CARGAR PALABRAS ==========
+        async function loadWords() {
+            try {
+                const response = await fetch('wordle.txt');
+                if (!response.ok) throw new Error('No se encontró wordle.txt');
+                const text = await response.text();
+                const list = text.split('\n')
+                    .map(l => l.trim().toUpperCase())
+                    .filter(l => l.length >= 2 && /^[A-ZÑ]+$/.test(l));
+                if (list.length === 0) throw new Error('wordle.txt vacío');
+                words = list;
+            } catch (err) {
+                console.warn('Error al cargar wordle.txt:', err.message);
+                // Lista mínima de respaldo con distintas longitudes
+                words = ['SOL', 'LUNA', 'LIBRO', 'PLANETA', 'MARIPOSA', 'BIBLIOTECA',
+                         'CASA', 'PERRO', 'VENTANA', 'UNIVERSIDAD', 'EXTRAORDINARIO'];
+            }
+        }
+
+        // ========== CALCULAR TAMAÑO DE CELDA SEGÚN LONGITUD ==========
+        function computeCellSize(len) {
+            // Cuanto más larga, más pequeña la celda.
+            // La base es 60px para 5 letras y baja ~4px por letra adicional,
+            // con un mínimo de 26px.
+            const size = Math.max(26, Math.min(60, 80 - len * 4));
+            return size;
+        }
+
+        function computeKeySize(len) {
+            // El teclado se hace un poco más pequeño si la palabra es larga
+            return len <= 5 ? 42 : (len <= 8 ? 36 : 30);
+        }
+
+        // ========== INICIAR JUEGO ==========
+        function startGame() {
+            if (words.length === 0) {
+                showToast('Cargando palabras...');
+                return;
+            }
+            targetWord = words[Math.floor(Math.random() * words.length)];
+            wordLength = targetWord.length;
+            currentRow = 0;
+            currentCol = 0;
+            currentGuess = '';
+            gameOver = false;
+            keyState = {};
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+
+            document.getElementById('statAttempts').textContent = '0 / 6';
+            document.getElementById('statLength').textContent = `Longitud: ${wordLength}`;
+
+            // Ajustar tamaños al tablero
+            const cellSize = computeCellSize(wordLength);
+            document.getElementById('wordleBoard').style.setProperty('--cell-size', cellSize + 'px');
+
+            const keySize = computeKeySize(wordLength);
+            document.getElementById('keyboard').style.setProperty('--key-size', keySize + 'px');
+
+            renderBoard();
+            renderKeyboard();
+        }
+
+        // ========== RENDERIZAR TABLERO ==========
+        function renderBoard() {
+            const board = document.getElementById('wordleBoard');
+            board.innerHTML = '';
+            for (let r = 0; r < MAX_ROWS; r++) {
+                const row = document.createElement('div');
+                row.className = 'wordle-row';
+                row.dataset.row = r;
+                row.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`;
+                for (let c = 0; c < wordLength; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'wordle-cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    row.appendChild(cell);
+                }
+                board.appendChild(row);
+            }
+        }
+
+        // ========== RENDERIZAR TECLADO ==========
+        function renderKeyboard() {
+            const kb = document.getElementById('keyboard');
+            kb.innerHTML = '';
+            const rows = [
+                'QWERTYUIOP'.split(''),
+                'ASDFGHJKLÑ'.split(''),
+                ['ENTER', ...'ZXCVBNM'.split(''), 'DEL']
+            ];
+
+            rows.forEach(rowKeys => {
+                const row = document.createElement('div');
+                row.className = 'keyboard-row';
+                rowKeys.forEach(k => {
+                    const key = document.createElement('div');
+                    key.className = 'key';
+                    key.dataset.key = k;
+                    key.textContent = k === 'DEL' ? '⌫' : k;
+                    if (k === 'ENTER' || k === 'DEL') key.classList.add('wide');
+                    key.addEventListener('click', () => handleKey(k));
+                    row.appendChild(key);
+                });
+                kb.appendChild(row);
+            });
+        }
+
+        // ========== TECLADO FÍSICO ==========
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+            if (gameOver) return;
+
+            const k = e.key.toUpperCase();
+            if (k === 'ENTER') {
+                handleKey('ENTER');
+            } else if (k === 'BACKSPACE' || k === 'DEL') {
+                e.preventDefault();
+                handleKey('DEL');
+            } else if (/^[A-ZÑ]$/.test(k)) {
+                handleKey(k);
+            }
+        });
+
+        // ========== MANEJAR TECLA ==========
+        function handleKey(key) {
+            if (gameOver) return;
+
+            if (key === 'ENTER') {
+                submitGuess();
+                return;
+            }
+            if (key === 'DEL') {
+                if (currentCol > 0) {
+                    currentCol--;
+                    currentGuess = currentGuess.slice(0, -1);
+                    const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${currentCol}"]`);
+                    if (cell) {
+                        cell.textContent = '';
+                        cell.classList.remove('filled');
+                    }
+                }
+                return;
+            }
+            if (/^[A-ZÑ]$/.test(key)) {
+                if (currentCol < wordLength) {
+                    currentGuess += key;
+                    const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${currentCol}"]`);
+                    if (cell) {
+                        cell.textContent = key;
+                        cell.classList.add('filled');
+                    }
+                    currentCol++;
+                }
+            }
+        }
+
+        // ========== ENVIAR INTENTO ==========
+        function submitGuess() {
+            if (currentGuess.length !== wordLength) {
+                showToast(`La palabra debe tener ${wordLength} letras`);
+                shakeRow(currentRow);
+                return;
+            }
+
+            const result = evaluateGuess(currentGuess, targetWord);
+
+            for (let c = 0; c < wordLength; c++) {
+                const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${c}"]`);
+                const letter = currentGuess[c];
+                const state = result[c];
+
+                setTimeout(() => {
+                    cell.classList.add('reveal');
+                    setTimeout(() => {
+                        cell.classList.remove('filled');
+                        cell.classList.add(state);
+                    }, 250);
+                }, c * 100);
+
+                const currentState = keyState[letter];
+                if (state === 'correct') {
+                    keyState[letter] = 'correct';
+                } else if (state === 'present' && currentState !== 'correct') {
+                    keyState[letter] = 'present';
+                } else if (state === 'absent' && !currentState) {
+                    keyState[letter] = 'absent';
+                }
+            }
+
+            setTimeout(() => {
+                updateKeyboardColors();
+            }, wordLength * 100 + 300);
+
+            if (currentGuess === targetWord) {
+                gameOver = true;
+                setTimeout(() => {
+                    finishGame(true);
+                }, wordLength * 100 + 500);
+                return;
+            }
+
+            currentRow++;
+            currentCol = 0;
+            currentGuess = '';
+            document.getElementById('statAttempts').textContent = `${currentRow} / 6`;
+
+            if (currentRow >= MAX_ROWS) {
+                gameOver = true;
+                setTimeout(() => {
+                    finishGame(false);
+                }, wordLength * 100 + 500);
+            }
+        }
+
+        // ========== EVALUAR INTENTO ==========
+        function evaluateGuess(guess, target) {
+            const len = guess.length;
+            const result = Array(len).fill('absent');
+            const targetLetters = target.split('');
+            const guessLetters = guess.split('');
+
+            for (let i = 0; i < len; i++) {
+                if (guessLetters[i] === targetLetters[i]) {
+                    result[i] = 'correct';
+                    targetLetters[i] = null;
+                    guessLetters[i] = null;
+                }
+            }
+            for (let i = 0; i < len; i++) {
+                if (guessLetters[i] === null) continue;
+                const idx = targetLetters.indexOf(guessLetters[i]);
+                if (idx !== -1) {
+                    result[i] = 'present';
+                    targetLetters[idx] = null;
+                }
+            }
+            return result;
+        }
+
+        // ========== ACTUALIZAR COLORES DEL TECLADO ==========
+        function updateKeyboardColors() {
+            document.querySelectorAll('.key').forEach(key => {
+                const k = key.dataset.key;
+                if (!k || k === 'ENTER' || k === 'DEL') return;
+                key.classList.remove('correct', 'present', 'absent');
+                if (keyState[k]) key.classList.add(keyState[k]);
+            });
+        }
+
+        // ========== SHAKE FILA ==========
+        function shakeRow(row) {
+            const rowEl = document.querySelector(`.wordle-row[data-row="${row}"]`);
+            if (!rowEl) return;
+            rowEl.classList.add('shake');
+            setTimeout(() => rowEl.classList.remove('shake'), 400);
+        }
+
+        // ========== TOAST ==========
+        let toastTimeout = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1500);
+        }
+
+        // ========== FIN ==========
+        function finishGame(won) {
+            const iconWrap = document.getElementById('endIconWrap');
+            const icon = document.getElementById('endIcon');
+            const title = document.getElementById('endTitle');
+            const subtitle = document.getElementById('endSubtitle');
+
+            if (won) {
+                iconWrap.className = 'inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-6';
+                icon.className = 'ph ph-trophy text-emerald-400 text-4xl';
+                title.textContent = '¡Has ganado!';
+                title.classList.remove('text-rose-300');
+                subtitle.textContent = 'Has acertado la palabra';
+            } else {
+                iconWrap.className = 'inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-500/10 border border-rose-500/30 mb-6';
+                icon.className = 'ph ph-x-circle text-rose-400 text-4xl';
+                title.textContent = '¡Has perdido!';
+                title.classList.add('text-rose-300');
+                subtitle.textContent = 'Se acabaron los intentos';
+            }
+
+            document.getElementById('finalWord').textContent = targetWord;
+
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('endScreen').classList.remove('hidden');
+        }
+
+        // ========== SALIR ==========
+        function exitToStart() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
+        // ========== INICIALIZAR ==========
+        loadWords();
+    </script>
+
+</body>
+</html>

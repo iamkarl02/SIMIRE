@@ -1,0 +1,44 @@
+facil|El niño pequeño juega con su balón rojo, azul y verde.
+facil|¿Dónde está mi cuaderno de matemáticas, mamá?
+facil|¡Qué bonito es el jardín de la abuela Rosa!
+facil|La señora Martínez compró pan, leche y huevos ayer.
+facil|Mi hermano pequeño tiene un gato llamado "Bigotes".
+facil|¿Te gustan las fresas con nata y chocolate?
+facil|El sol brilla, los pájaros cantan y yo sonrío.
+facil|¡Hola! ¿Cómo te llamas? Yo me llamo Lucía.
+facil|El perro de Juan corre por el parque los domingos.
+facil|A mí me encanta la sopa de mi madre, ¡está riquísima!
+facil|La niña dibuja un corazón, una estrella y una flor.
+facil|¿Quieres jugar conmigo al escondite esta tarde?
+facil|¡Vaya! Se me ha olvidado el paraguas en casa.
+facil|Mi tía Carmen vive en un pueblo muy pequeño.
+facil|El gato duerme plácidamente sobre el sofá azul.
+
+normal|Ayer fui al cine con mis amigos y vimos una película muy divertida; después cenamos pizza.
+normal|¿Sabes qué? El ordenador que compramos la semana pasada funciona muchísimo más rápido.
+normal|Los estudiantes deben estudiar todos los días, pero también necesitan descansar y divertirse.
+normal|La ciudad de Madrid tiene museos, parques, teatros... ¡es imposible aburrirse!
+normal|Cuando termine el trabajo, iré a casa; luego prepararé la cena y veré una serie.
+normal|El programa sirve para editar fotografías, retocar colores y añadir efectos especiales, ¿lo has probado?
+normal|Mi hermano estudia ingeniería en la universidad; quiere ser ingeniero de software.
+normal|Las vacaciones de verano son las mejores del año: playa, sol y helados.
+normal|El restaurante de la esquina tiene una comida excelente, aunque es un poco caro.
+normal|Aprender a programar requiere tiempo, práctica y muchísima paciencia, ¡pero merece la pena!
+
+dificil|El desarrollo de software moderno exige conocer múltiples lenguajes de programación, frameworks y herramientas de control de versiones como Git; sin embargo, la lógica es lo fundamental.
+dificil|La ciberseguridad es fundamental en las empresas actuales, ya que protege datos sensibles frente a ataques informáticos cada vez más sofisticados: phishing, ransomware, DDoS...
+dificil|Los sistemas operativos gestionan los recursos del hardware, administran procesos y proporcionan una interfaz entre el usuario y la máquina; ¿conoces alguno además de Windows y Linux?
+dificil|La virtualización permite ejecutar varios sistemas operativos simultáneamente sobre un mismo servidor físico, optimizando recursos: CPU, RAM, almacenamiento y red.
+dificil|El protocolo TCP/IP es la base de Internet y define cómo se transmiten los paquetes de datos entre dispositivos conectados; sin él, ¡la red no funcionaría!
+dificil|La administración de redes requiere conocimientos de enrutamiento, conmutación y configuración de dispositivos como switches y routers; es un campo apasionante, ¿verdad?
+dificil|El almacenamiento en la nube ofrece ventajas como la escalabilidad, la disponibilidad y la reducción de costes; no obstante, también plantea dudas sobre la privacidad.
+dificil|La inteligencia artificial está revolucionando sectores como la medicina, la educación y la industria automotriz; ¿estamos preparados para este cambio tan vertiginoso?
+
+extremo|La implementación de políticas de seguridad informática en entornos corporativos requiere un análisis exhaustivo de vulnerabilidades, auditorías periódicas y formación continua del personal; además, exige una monitorización constante (24/7) de los sistemas críticos.
+extremo|El diseño de arquitecturas de microservicios implica descomponer aplicaciones monolíticas en servicios independientes que se comunican mediante APIs RESTful y mensajería asíncrona; ¿es siempre la mejor solución? Depende del contexto...
+extremo|La optimización del rendimiento en bases de datos relacionales exige técnicas como la indexación adecuada, la normalización de esquemas y el uso eficiente de consultas SQL; no obstante, la desnormalización también puede ser útil en ciertos escenarios.
+extremo|El despliegue continuo en entornos de producción requiere pipelines automatizados que integren pruebas unitarias, análisis estático de código y estrategias de rollback; ¿te atreverías a implantarlo en tu empresa sin red de seguridad?
+extremo|La computación cuántica representa un paradigma completamente nuevo que aprovecha los principios de la superposición y el entrelazamiento para resolver problemas complejos; sin embargo, aún estamos lejos de la "supremacía cuántica" práctica.
+extremo|La gestión de contenedores con Docker y Kubernetes permite orquestar aplicaciones distribuidas garantizando alta disponibilidad, escalabilidad horizontal y tolerancia a fallos; ¿has pensado ya en migrar tu infraestructura al modelo cloud-native?
+extremo|La refactorización de código heredado ("legacy code") exige paciencia, disciplina y una estrategia clara: escribir pruebas, aislar dependencias, aplicar patrones de diseño y documentar cada cambio; ¡no es tarea fácil, pero es gratificante!
+extremo|El análisis forense digital implica la recolección, preservación y análisis de evidencias electrónicas siguiendo la cadena de custodia; cualquier error puede invalidar todo el proceso judicial, ¿lo sabías?
