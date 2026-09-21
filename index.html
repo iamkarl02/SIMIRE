@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 4px; }
+        .custom-scrollbar-main::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Animación de entrada */
+        .fade-up {
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .fade-up-delay-1 { animation-delay: 0.1s; }
+        .fade-up-delay-2 { animation-delay: 0.2s; }
+        .fade-up-delay-3 { animation-delay: 0.3s; }
+        .fade-up-delay-4 { animation-delay: 0.4s; }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo con glow pulsante */
+        .logo-glow {
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+        @keyframes logoGlow {
+            0%, 100% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.4), 0 0 80px rgba(139, 92, 246, 0.2); }
+            50% { box-shadow: 0 0 60px rgba(99, 102, 241, 0.6), 0 0 100px rgba(139, 92, 246, 0.35); }
+        }
+
+        /* Gradiente de texto animado */
+        .gradient-text {
+            background: linear-gradient(90deg, #818cf8, #a78bfa, #f472b6, #818cf8);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 6s ease-in-out infinite;
+        }
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Botones de acceso rápido */
+        .quick-btn {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .quick-btn:hover {
+            transform: translateY(-3px);
+        }
+        .quick-btn .icon-wrap {
+            transition: all 0.25s ease;
+        }
+        .quick-btn:hover .icon-wrap {
+            transform: scale(1.1) rotate(-5deg);
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl shrink-0">
+        
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <!-- Fondos decorativos -->
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/15 via-transparent to-violet-950/15 pointer-events-none"></div>
+        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/8 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="fixed top-1/3 right-0 w-[500px] h-[500px] bg-violet-600/8 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="fixed bottom-0 left-1/3 w-[400px] h-[400px] bg-pink-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 min-h-full flex items-center justify-center p-8">
+            
+            <div class="w-full max-w-3xl text-center">
+
+                <!-- Logo con glow -->
+                <div class="fade-up flex justify-center mb-8">
+                    <div class="logo-glow w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-gradient-to-tr from-indigo-600 via-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-2xl">
+                        <i class="ph-bold ph-desktop text-5xl md:text-6xl"></i>
+                    </div>
+                </div>
+
+                <!-- Bienvenida -->
+                <div class="fade-up fade-up-delay-1">
+                    <p class="text-[11px] md:text-xs font-bold tracking-[0.35em] text-slate-500 uppercase mb-3">Bienvenido a</p>
+                    <h1 class="text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mb-6 gradient-text leading-none">
+                        SIMIRE
+                    </h1>
+                </div>
+
+                <!-- Subtítulo -->
+                <div class="fade-up fade-up-delay-2">
+                    <div class="inline-flex items-center gap-3 bg-[#0d0d11]/60 border border-slate-900/60 rounded-full px-5 py-2 mb-10">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs font-semibold text-slate-300 tracking-wide">Sistemas Microinformáticos y Redes</span>
+                    </div>
+                    <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed mb-12">
+                        Tu plataforma central para gestionar el día a día del ciclo: horario, calendario, tareas, recursos, herramientas y juegos. Todo en un mismo sitio.
+                    </p>
+                </div>
+
+                <!-- Botones de acceso rápido -->
+                <div class="fade-up fade-up-delay-3">
+                    <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-4">Accesos rápidos</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl mx-auto">
+                        
+                        <a href="horario.html" class="quick-btn bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/50 rounded-2xl p-5 flex flex-col items-center gap-3 group">
+                            <div class="icon-wrap w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center">
+                                <i class="ph ph-calendar-blank text-indigo-400 text-xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-200">Horario</span>
+                        </a>
+
+                        <a href="calendario.html" class="quick-btn bg-[#0d0d11]/60 border border-slate-900/60 hover:border-sky-500/50 rounded-2xl p-5 flex flex-col items-center gap-3 group">
+                            <div class="icon-wrap w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center">
+                                <i class="ph ph-calendar text-sky-400 text-xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-200">Calendario</span>
+                        </a>
+
+                        <a href="tareas.html" class="quick-btn bg-[#0d0d11]/60 border border-slate-900/60 hover:border-emerald-500/50 rounded-2xl p-5 flex flex-col items-center gap-3 group">
+                            <div class="icon-wrap w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                                <i class="ph ph-list-checks text-emerald-400 text-xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-200">Tareas</span>
+                        </a>
+
+                        <a href="mecanografia.html" class="quick-btn bg-[#0d0d11]/60 border border-slate-900/60 hover:border-amber-500/50 rounded-2xl p-5 flex flex-col items-center gap-3 group">
+                            <div class="icon-wrap w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+                                <i class="ph ph-keyboard text-amber-400 text-xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-slate-200">Mecanografía</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Pie con versión y estado -->
+                <div class="fade-up fade-up-delay-4 mt-16">
+                    <div class="flex items-center justify-center gap-6 text-[10px] font-bold tracking-widest text-slate-600 uppercase">
+                        <span class="flex items-center gap-2">
+                            <i class="ph ph-code text-slate-500"></i>
+                            v1.0
+                        </span>
+                        <span class="w-1 h-1 rounded-full bg-slate-700"></span>
+                        <span class="flex items-center gap-2">
+                            <i class="ph ph-check-circle text-emerald-500"></i>
+                            Sistema operativo
+                        </span>
+                        <span class="w-1 h-1 rounded-full bg-slate-700"></span>
+                        <span class="mono" id="clock">--:--:--</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== RELOJ EN VIVO ==========
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const el = document.getElementById('clock');
+            if (el) el.textContent = `${hh}:${mm}:${ss}`;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+
+</body>
+</html>
