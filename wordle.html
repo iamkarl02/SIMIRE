@@ -30,10 +30,7 @@
             -webkit-touch-callout: none;
         }
 
-        .level-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .level-btn:hover { transform: translateY(-3px); }
-
-        /* Tablero dinámico: las columnas se generan por JS */
+        /* Tablero dinámico */
         .wordle-board {
             display: grid;
             grid-template-rows: repeat(6, 1fr);
@@ -46,7 +43,6 @@
             gap: 6px;
         }
         .wordle-cell {
-            /* El tamaño se ajusta por JS según la longitud */
             width: var(--cell-size, 56px);
             height: var(--cell-size, 56px);
             display: flex;
@@ -62,6 +58,7 @@
             border-radius: 8px;
             transition: all 0.15s ease;
             user-select: none;
+            position: relative;
         }
         .wordle-cell.filled {
             border-color: #334155;
@@ -150,6 +147,13 @@
         .key.present { background-color: #fbbf24; color: #030304; }
         .key.absent { background-color: #0a0a0c; color: #475569; }
 
+        /* Bloquear interacción cuando el juego está bloqueado por pista de vocales */
+        .board-locked .wordle-cell,
+        .board-locked .key {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
         #toast {
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
@@ -184,6 +188,11 @@
         .hint-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
+        }
+
+        /* Notificación permanente */
+        #permanentNotice {
+            animation: popBig 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
@@ -355,7 +364,7 @@
                             </li>
                             <li class="flex items-start gap-3">
                                 <div class="w-6 h-6 rounded bg-indigo-500 flex-shrink-0 mt-0.5 flex items-center justify-center text-[10px] text-white font-bold">★</div>
-                                <span>Pista: te dice cuántas vocales hay o te revela una letra.</span>
+                                <span>Pista (1 por partida): o te dice cuántas vocales hay (y no podrás seguir jugando) o te revela una letra en su posición correcta.</span>
                             </li>
                         </ul>
                         <p class="text-[11px] text-slate-500 mt-5 pt-5 border-t border-slate-900/60 text-center">
@@ -382,7 +391,7 @@
                             <p id="statLength" class="text-[10px] text-slate-500 mt-0.5">Longitud: 0</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button id="hintBtn" onclick="useHint()" class="hint-btn w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/60 flex items-center justify-center text-amber-400 hover:text-amber-300 transition-all" title="Pista (3 restantes)">
+                            <button id="hintBtn" onclick="useHint()" class="hint-btn w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/60 flex items-center justify-center text-amber-400 hover:text-amber-300 transition-all" title="Pista (1 por partida)">
                                 <i class="ph ph-lightbulb text-lg"></i>
                             </button>
                             <button onclick="startGame()" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
@@ -427,6 +436,28 @@
                     </div>
                 </div>
 
+                <!-- NOTIFICACIÓN PERMANENTE (pista de vocales) -->
+                <div id="permanentNotice" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6" style="background: rgba(3, 3, 4, 0.85); backdrop-filter: blur(6px);">
+                    <div class="bg-[#0d0d11] border-2 border-indigo-500/60 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl shadow-indigo-500/20">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/15 border border-indigo-500/40 mb-5">
+                            <i class="ph ph-lightbulb text-indigo-400 text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-white mb-3">Pista de vocales</h3>
+                        <p id="permanentNoticeText" class="text-slate-300 text-base mb-6 leading-relaxed">La palabra tiene <span class="text-indigo-300 font-bold">0</span> vocales.</p>
+                        <p class="text-xs text-slate-500 mb-6">Has usado la pista de vocales. No puedes seguir jugando esta partida.</p>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="startGame()" class="px-5 py-2.5 bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 rounded-xl text-sm font-bold text-indigo-300 transition-all flex items-center justify-center gap-2">
+                                <i class="ph ph-arrows-clockwise text-lg"></i>
+                                Nueva partida
+                            </button>
+                            <button onclick="exitToStart()" class="px-5 py-2.5 bg-[#0d0d11]/60 border border-slate-900/60 hover:border-slate-700 rounded-xl text-sm font-bold text-slate-300 transition-all flex items-center justify-center gap-2">
+                                <i class="ph ph-house text-lg"></i>
+                                Volver al inicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -468,16 +499,15 @@
         // ========== VARIABLES ==========
         let words = [];
         let targetWord = '';
-        let wordLength = 5;       // Se actualiza al iniciar la partida
+        let wordLength = 5;
         let currentRow = 0;
         let currentCol = 0;
         let currentGuess = '';
         let gameOver = false;
         let keyState = {};
         const MAX_ROWS = 6;
-        const MAX_HINTS = 3;
-        let hintsLeft = MAX_HINTS;
-        let hintUsedThisRow = false; // Para evitar múltiples pistas en la misma fila
+        let hintUsedThisGame = false;    // Solo 1 pista por partida
+        let gameBlockedByHint = false;   // Bloqueo permanente por pista de vocales
 
         // ========== CARGAR PALABRAS ==========
         async function loadWords() {
@@ -492,16 +522,14 @@
                 words = list;
             } catch (err) {
                 console.warn('Error al cargar wordle.txt:', err.message);
-                // Lista mínima de respaldo con distintas longitudes
                 words = ['SOL', 'LUNA', 'LIBRO', 'PLANETA', 'MARIPOSA', 'BIBLIOTECA',
                          'CASA', 'PERRO', 'VENTANA', 'UNIVERSIDAD', 'EXTRAORDINARIO'];
             }
         }
 
-        // ========== CALCULAR TAMAÑO DE CELDA SEGÚN LONGITUD ==========
+        // ========== CALCULAR TAMAÑOS ==========
         function computeCellSize(len) {
-            const size = Math.max(26, Math.min(60, 80 - len * 4));
-            return size;
+            return Math.max(26, Math.min(60, 80 - len * 4));
         }
 
         function computeKeySize(len) {
@@ -521,21 +549,26 @@
             currentGuess = '';
             gameOver = false;
             keyState = {};
-            hintsLeft = MAX_HINTS;
-            hintUsedThisRow = false;
+            hintUsedThisGame = false;
+            gameBlockedByHint = false;
+
+            // Ocultar notificación permanente si estaba visible
+            document.getElementById('permanentNotice').classList.add('hidden');
 
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('endScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
             document.getElementById('gameScreen').classList.add('flex');
 
+            // Quitar bloqueo visual
+            document.getElementById('wordleBoard').classList.remove('board-locked');
+            document.getElementById('keyboard').classList.remove('board-locked');
+
             document.getElementById('statAttempts').textContent = '0 / 6';
             document.getElementById('statLength').textContent = `Longitud: ${wordLength}`;
 
-            // Actualizar botón de pista
             updateHintButton();
 
-            // Ajustar tamaños al tablero
             const cellSize = computeCellSize(wordLength);
             document.getElementById('wordleBoard').style.setProperty('--cell-size', cellSize + 'px');
 
@@ -595,7 +628,7 @@
         // ========== TECLADO FÍSICO ==========
         document.addEventListener('keydown', (e) => {
             if (document.getElementById('gameScreen').classList.contains('hidden')) return;
-            if (gameOver) return;
+            if (gameOver || gameBlockedByHint) return;
 
             const k = e.key.toUpperCase();
             if (k === 'ENTER') {
@@ -610,7 +643,7 @@
 
         // ========== MANEJAR TECLA ==========
         function handleKey(key) {
-            if (gameOver) return;
+            if (gameOver || gameBlockedByHint) return;
 
             if (key === 'ENTER') {
                 submitGuess();
@@ -689,7 +722,6 @@
             currentRow++;
             currentCol = 0;
             currentGuess = '';
-            hintUsedThisRow = false; // Resetear para la nueva fila
             document.getElementById('statAttempts').textContent = `${currentRow} / 6`;
 
             if (currentRow >= MAX_ROWS) {
@@ -788,94 +820,104 @@
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('flex');
             document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('permanentNotice').classList.add('hidden');
+            document.getElementById('wordleBoard').classList.remove('board-locked');
+            document.getElementById('keyboard').classList.remove('board-locked');
             document.getElementById('startScreen').classList.remove('hidden');
         }
 
-        // ========== SISTEMA DE PISTAS ==========
+        // ========== BOTÓN DE PISTA ==========
         function updateHintButton() {
             const btn = document.getElementById('hintBtn');
-            btn.title = `Pista (${hintsLeft} restantes)`;
-            if (hintsLeft <= 0) {
+            if (hintUsedThisGame) {
                 btn.disabled = true;
                 btn.classList.add('opacity-40', 'cursor-not-allowed');
+                btn.title = 'Pista ya usada en esta partida';
             } else {
                 btn.disabled = false;
                 btn.classList.remove('opacity-40', 'cursor-not-allowed');
+                btn.title = 'Pista (1 por partida)';
             }
         }
 
         function useHint() {
-            if (gameOver) return;
-            if (hintsLeft <= 0) {
-                showToast('No te quedan pistas');
-                return;
-            }
-            if (hintUsedThisRow) {
-                showToast('Ya has usado una pista en este intento');
+            if (gameOver || gameBlockedByHint) return;
+            if (hintUsedThisGame) {
+                showToast('Ya has usado la pista en esta partida');
                 return;
             }
 
-            // Elegir tipo de pista al azar: 0 = vocales, 1 = letra correcta
+            // Marcar como usada inmediatamente
+            hintUsedThisGame = true;
+            updateHintButton();
+
+            // Elegir tipo al azar: 0 = vocales, 1 = letra correcta
             const hintType = Math.random() < 0.5 ? 'vowels' : 'letter';
 
             if (hintType === 'vowels') {
-                const vowelsInWord = (targetWord.match(/[AEIOU]/g) || []).length;
-                showToast(`💡 La palabra tiene ${vowelsInWord} vocal${vowelsInWord !== 1 ? 'es' : ''}`);
+                showVowelsHint();
             } else {
-                // Revelar una letra en posición correcta (solo si no se ha revelado ya)
-                const unrevealedPositions = [];
-                for (let i = 0; i < targetWord.length; i++) {
-                    const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${i}"]`);
-                    // Solo revelamos posiciones que no estén ya marcadas como "hint"
-                    if (cell && !cell.classList.contains('hint')) {
-                        unrevealedPositions.push(i);
-                    }
+                showLetterHint();
+            }
+        }
+
+        function showVowelsHint() {
+            const vowelsInWord = (targetWord.match(/[AEIOU]/g) || []).length;
+            const plural = vowelsInWord !== 1;
+
+            // Bloquear el juego permanentemente en esta partida
+            gameBlockedByHint = true;
+            document.getElementById('wordleBoard').classList.add('board-locked');
+            document.getElementById('keyboard').classList.add('board-locked');
+
+            // Mostrar notificación permanente
+            document.getElementById('permanentNoticeText').innerHTML =
+                `La palabra oculta tiene <span class="text-indigo-300 font-bold text-xl">${vowelsInWord}</span> vocal${plural ? 'es' : ''}.`;
+            document.getElementById('permanentNotice').classList.remove('hidden');
+        }
+
+        function showLetterHint() {
+            // Buscar posiciones que aún no estén reveladas como pista
+            const unrevealedPositions = [];
+            for (let i = 0; i < targetWord.length; i++) {
+                const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${i}"]`);
+                if (cell && !cell.classList.contains('hint')) {
+                    unrevealedPositions.push(i);
                 }
-
-                if (unrevealedPositions.length === 0) {
-                    // Si ya se revelaron todas, damos la pista de vocales
-                    const vowelsInWord = (targetWord.match(/[AEIOU]/g) || []).length;
-                    showToast(`💡 La palabra tiene ${vowelsInWord} vocal${vowelsInWord !== 1 ? 'es' : ''}`);
-                    hintUsedThisRow = true;
-                    hintsLeft--;
-                    updateHintButton();
-                    return;
-                }
-
-                const pos = unrevealedPositions[Math.floor(Math.random() * unrevealedPositions.length)];
-                const letter = targetWord[pos];
-                const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${pos}"]`);
-
-                // Rellenar la celda con la letra revelada como pista
-                cell.textContent = letter;
-                cell.classList.add('hint');
-                cell.classList.remove('filled');
-                cell.style.position = 'relative'; // Para el ::after
-
-                // Actualizar currentGuess y currentCol si es necesario
-                // Para que el usuario no tenga que escribirla de nuevo
-                // Construimos el guess actual con la letra en su posición
-                const guessArray = [];
-                for (let i = 0; i < wordLength; i++) {
-                    const c = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${i}"]`);
-                    if (c && c.textContent && c.textContent !== '') {
-                        guessArray.push(c.textContent);
-                    } else {
-                        guessArray.push('');
-                    }
-                }
-                guessArray[pos] = letter;
-                currentGuess = guessArray.join('');
-                // Ajustar currentCol al primer hueco vacío
-                let firstEmpty = guessArray.indexOf('');
-                currentCol = firstEmpty === -1 ? wordLength : firstEmpty;
-
-                showToast(`💡 Pista: la letra "${letter}" está en la posición ${pos + 1}`);
             }
 
-            hintUsedThisRow = true;
-            hintsLeft--;
-            updateHintButton();
+            // Si ya están todas reveladas (raro), no hacer nada más
+            if (unrevealedPositions.length === 0) {
+                // Devolver la pista como vocales para no dejar sin efecto
+                showVowelsHint();
+                return;
+            }
+
+            const pos = unrevealedPositions[Math.floor(Math.random() * unrevealedPositions.length)];
+            const letter = targetWord[pos];
+            const cell = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${pos}"]`);
+
+            // Rellenar la celda con la letra revelada como pista
+            cell.textContent = letter;
+            cell.classList.add('hint');
+            cell.classList.remove('filled');
+
+            // Actualizar currentGuess para que el usuario no tenga que reescribirla
+            const guessArray = [];
+            for (let i = 0; i < wordLength; i++) {
+                const c = document.querySelector(`.wordle-cell[data-row="${currentRow}"][data-col="${i}"]`);
+                if (c && c.textContent && c.textContent !== '') {
+                    guessArray.push(c.textContent);
+                } else {
+                    guessArray.push('');
+                }
+            }
+            guessArray[pos] = letter;
+            currentGuess = guessArray.join('');
+            let firstEmpty = guessArray.indexOf('');
+            currentCol = firstEmpty === -1 ? wordLength : firstEmpty;
+
+            showToast(`💡 Pista: la letra "${letter}" está en la posición ${pos + 1}`);
         }
 
         // ========== INICIALIZAR ==========
