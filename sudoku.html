@@ -125,6 +125,63 @@
             0% { background-color: rgba(52, 211, 153, 0.5); }
             100% { background-color: transparent; }
         }
+
+        /* Modo anotación activo */
+        .mode-note-active {
+            background-color: rgba(96, 165, 250, 0.25) !important;
+            border-color: rgba(96, 165, 250, 0.6) !important;
+            color: #60a5fa !important;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.25);
+        }
+
+        /* Resaltado de números iguales */
+        .sudoku-cell.highlight-same {
+            background-color: rgba(99, 102, 241, 0.45) !important;
+            box-shadow: inset 0 0 0 2px rgba(99, 102, 241, 0.9), 0 0 14px rgba(99, 102, 241, 0.5) !important;
+            z-index: 5;
+        }
+        .sudoku-cell.highlight-same::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 4px;
+            border: 2px solid rgba(99, 102, 241, 0.7);
+            animation: pulseHighlight 1.2s ease infinite;
+            pointer-events: none;
+        }
+        @keyframes pulseHighlight {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.04); }
+        }
+
+        /* Anotaciones pequeñas */
+        .sudoku-cell .notes {
+            position: absolute;
+            inset: 2px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            pointer-events: none;
+            font-size: clamp(0.4rem, 1vh, 0.7rem);
+            line-height: 1;
+            color: #94a3b8;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+        .sudoku-cell .notes span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sudoku-cell .notes span.n1 { grid-area: 1 / 1; }
+        .sudoku-cell .notes span.n2 { grid-area: 1 / 2; }
+        .sudoku-cell .notes span.n3 { grid-area: 1 / 3; }
+        .sudoku-cell .notes span.n4 { grid-area: 2 / 1; }
+        .sudoku-cell .notes span.n5 { grid-area: 2 / 2; }
+        .sudoku-cell .notes span.n6 { grid-area: 2 / 3; }
+        .sudoku-cell .notes span.n7 { grid-area: 3 / 1; }
+        .sudoku-cell .notes span.n8 { grid-area: 3 / 2; }
+        .sudoku-cell .notes span.n9 { grid-area: 3 / 3; }
     </style>
 </head>
 <body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
@@ -420,6 +477,11 @@
                                 Borrar
                             </button>
 
+                            <button id="noteModeBtn" onclick="toggleNoteMode()" class="num-btn h-12 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 text-slate-300 font-bold text-sm hover:border-sky-500/40 flex items-center justify-center gap-2">
+                                <i class="ph ph-pencil-simple text-lg"></i>
+                                Modo nota <span class="text-[10px] font-mono opacity-60">(F)</span>
+                            </button>
+
                             <div class="bg-[#0d0d11]/60 border border-slate-900/60 rounded-2xl p-4 text-center">
                                 <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-1">Progreso</p>
                                 <p id="statProgress" class="text-lg font-bold text-indigo-300 tabular-nums">0 / 81</p>
@@ -428,7 +490,7 @@
                     </div>
 
                     <p class="text-center text-xs text-slate-500 mt-6">
-                        Haz clic en una celda y escribe un número (1-9). Usa Supr o Retroceso para borrar.
+                        Haz clic en una celda y escribe un número (1-9). Usa Supr o Retroceso para borrar. · <b class="text-sky-400">F</b>: modo nota ✏️ · Click en número: resaltar iguales
                     </p>
                 </div>
 
@@ -532,6 +594,7 @@
         let solution = [];
         let board = [];
         let given = [];
+        let notes = []; // Notas por celda: notes[r][c] = [1,3,5]
         let selected = { r: -1, c: -1 };
         let errors = 0;
         let startTime = null;
@@ -540,6 +603,10 @@
 
         let maxErrorsMode = false;
         const MAX_ERRORS = 3;
+
+        let noteMode = false;
+        let highlightedNumber = null;
+        let highlightedCells = [];
 
         // ========== TOGGLE INTENTOS MÁXIMOS ==========
         function toggleMaxErrors() {
@@ -744,10 +811,15 @@
 
             board = puzzle.map(row => row.slice());
             given = puzzle.map(row => row.map(v => v !== 0));
+            notes = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []));
 
             selected = { r: -1, c: -1 };
             errors = 0;
             finished = false;
+            noteMode = false;
+            highlightedNumber = null;
+            clearHighlights();
+            updateNoteModeUI();
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = null;
             startTime = null;
@@ -784,11 +856,88 @@
                         if (given[r][c]) cell.classList.add('given');
                     }
 
-                    cell.addEventListener('click', () => selectCell(r, c));
+                    // Renderizar notas si las hay
+                    renderNotesInCell(cell, r, c);
+
+                    cell.addEventListener('click', () => handleCellClick(r, c));
                     boardEl.appendChild(cell);
                 }
             }
             applySelectionStyles();
+        }
+
+        // ========== RENDERIZAR NOTAS EN UNA CELDA ==========
+        function renderNotesInCell(cell, r, c) {
+            const existing = cell.querySelector('.notes');
+            if (existing) existing.remove();
+
+            if (notes[r][c].length === 0) return;
+
+            const notesDiv = document.createElement('div');
+            notesDiv.className = 'notes';
+            notes[r][c].forEach(n => {
+                const span = document.createElement('span');
+                span.className = 'n' + n;
+                span.textContent = n;
+                notesDiv.appendChild(span);
+            });
+            cell.appendChild(notesDiv);
+        }
+
+        // ========== CLICK EN CELDA ==========
+        function handleCellClick(r, c) {
+            if (finished) return;
+
+            const val = board[r][c];
+
+            // Si la celda tiene un número (dado o introducido), resaltar iguales
+            if (val !== 0) {
+                highlightSameNumber(val);
+                if (!given[r][c]) {
+                    selected = { r, c };
+                    applySelectionStyles();
+                }
+                return;
+            }
+
+            // Si hay un resaltado activo, quitarlo
+            if (highlightedNumber !== null) {
+                clearHighlights();
+            }
+
+            // Seleccionar celda vacía
+            if (given[r][c]) return;
+            selected = { r, c };
+            applySelectionStyles();
+        }
+
+        // ========== RESALTAR NÚMEROS IGUALES ==========
+        function highlightSameNumber(num) {
+            if (highlightedNumber === num) {
+                clearHighlights();
+                return;
+            }
+
+            clearHighlights();
+            highlightedNumber = num;
+
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (board[r][c] === num) {
+                        const el = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${c}"]`);
+                        if (el) {
+                            el.classList.add('highlight-same');
+                            highlightedCells.push(el);
+                        }
+                    }
+                }
+            }
+        }
+
+        function clearHighlights() {
+            highlightedCells.forEach(el => el.classList.remove('highlight-same'));
+            highlightedCells = [];
+            highlightedNumber = null;
         }
 
         // ========== SELECCIONAR CELDA ==========
@@ -818,6 +967,21 @@
             });
         }
 
+        // ========== MODO NOTA ==========
+        function toggleNoteMode() {
+            noteMode = !noteMode;
+            updateNoteModeUI();
+        }
+
+        function updateNoteModeUI() {
+            const btn = document.getElementById('noteModeBtn');
+            if (noteMode) {
+                btn.classList.add('mode-note-active');
+            } else {
+                btn.classList.remove('mode-note-active');
+            }
+        }
+
         // ========== INPUT DE NÚMERO ==========
         function inputNumber(n) {
             if (finished) return;
@@ -825,20 +989,48 @@
             const { r, c } = selected;
             if (given[r][c]) return;
 
+            const cell = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${c}"]`);
+            if (!cell) return;
+
+            // ====== MODO NOTA ======
+            if (noteMode) {
+                // Si la celda ya tiene un número, no se puede anotar
+                if (board[r][c] !== 0) return;
+
+                if (n === 0) {
+                    // Borrar todas las notas de la celda
+                    notes[r][c] = [];
+                    renderNotesInCell(cell, r, c);
+                    return;
+                }
+
+                // Toggle: si ya está el número, se quita; si no, se añade
+                if (notes[r][c].includes(n)) {
+                    notes[r][c] = notes[r][c].filter(x => x !== n);
+                } else {
+                    notes[r][c] = [...notes[r][c], n].sort((a, b) => a - b);
+                }
+                renderNotesInCell(cell, r, c);
+                return;
+            }
+
+            // ====== MODO NORMAL ======
             if (n === 0) {
                 board[r][c] = 0;
+                notes[r][c] = [];
                 updateCell(r, c);
                 updateProgress();
                 return;
             }
 
+            // Al poner un número, borrar las notas de esa celda
+            notes[r][c] = [];
             board[r][c] = n;
             updateCell(r, c);
 
             if (n !== solution[r][c]) {
                 errors++;
                 document.getElementById('statErrors').textContent = errors;
-                const cell = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${c}"]`);
                 cell.classList.add('error');
                 cell.classList.remove('correct');
                 updateLivesIndicator();
@@ -848,7 +1040,6 @@
                     return;
                 }
             } else {
-                const cell = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${c}"]`);
                 cell.classList.remove('error');
                 if (!given[r][c]) cell.classList.add('correct');
             }
@@ -862,6 +1053,10 @@
         function updateCell(r, c) {
             const cell = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${c}"]`);
             const val = board[r][c];
+            // Limpiar notas primero
+            const notesEl = cell.querySelector('.notes');
+            if (notesEl) notesEl.remove();
+
             cell.textContent = val === 0 ? '' : val;
             cell.classList.remove('error');
             if (!given[r][c] && val !== 0 && val === solution[r][c]) {
@@ -927,6 +1122,8 @@
             document.getElementById('finalTime').textContent = elapsed + 's';
             document.getElementById('finalSeed').textContent = currentSeed;
 
+            clearHighlights();
+
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('endScreen').classList.remove('hidden');
         }
@@ -941,6 +1138,9 @@
             timerInterval = null;
             finished = true;
             startTime = null;
+            noteMode = false;
+            clearHighlights();
+            updateNoteModeUI();
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('endScreen').classList.add('hidden');
             document.getElementById('levelSelection').classList.remove('hidden');
@@ -1003,6 +1203,21 @@
 
         // ========== TECLADO FÍSICO ==========
         document.addEventListener('keydown', (e) => {
+            // Tecla F para modo nota
+            if (e.key === 'f' || e.key === 'F') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+                e.preventDefault();
+                toggleNoteMode();
+                return;
+            }
+
+            // Escape para quitar resaltados
+            if (e.key === 'Escape') {
+                clearHighlights();
+                return;
+            }
+
             if (document.getElementById('gameScreen').classList.contains('hidden')) return;
             if (selected.r === -1) return;
 
