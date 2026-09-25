@@ -1,3 +1,3 @@
 06/10/2026 Examen_Aplicaciones_Ofimáticas #8b5cf6 8:30-11:00 Examen_UD1_AO_Edición_de_imagen
-05/10/2026 Examen_Sistemas_Operativos_Monopuestos #00CDF8 11:20-12:10 NI
-21/09/2026 Examen_Redes_Locales #ef4444 11:30am–12:30pm Exame_teoría_UD1_e_UD2
+05/10/2026 Examen_Sistemas_Operativos_Monopuestos #00CDF8 11:20-12:10 No_Información
+21/09/2026 Examen_Redes_Locales #ef4444 11:30–12:30 Exame_teoría_UD1_e_UD2
