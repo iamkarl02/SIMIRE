@@ -982,6 +982,42 @@
             }
         }
 
+        // ========== ELIMINAR NOTAS DE UN NÚMERO EN FILA/COLUMNA/CUADRADO ==========
+        function removeNotesAround(r, c, num) {
+            // Eliminar de la fila
+            for (let cc = 0; cc < 9; cc++) {
+                if (cc === c) continue;
+                if (notes[r][cc].includes(num)) {
+                    notes[r][cc] = notes[r][cc].filter(x => x !== num);
+                    const el = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${r}"][data-c="${cc}"]`);
+                    if (el) renderNotesInCell(el, r, cc);
+                }
+            }
+            // Eliminar de la columna
+            for (let rr = 0; rr < 9; rr++) {
+                if (rr === r) continue;
+                if (notes[rr][c].includes(num)) {
+                    notes[rr][c] = notes[rr][c].filter(x => x !== num);
+                    const el = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${rr}"][data-c="${c}"]`);
+                    if (el) renderNotesInCell(el, rr, c);
+                }
+            }
+            // Eliminar del cuadrado 3x3
+            const br = Math.floor(r / 3) * 3;
+            const bc = Math.floor(c / 3) * 3;
+            for (let rr = br; rr < br + 3; rr++) {
+                for (let cc = bc; cc < bc + 3; cc++) {
+                    if (rr === r && cc === c) continue;
+                    if (rr === r || cc === c) continue; // Ya lo hemos hecho en fila/columna
+                    if (notes[rr][cc].includes(num)) {
+                        notes[rr][cc] = notes[rr][cc].filter(x => x !== num);
+                        const el = document.querySelector(`#sudokuBoard .sudoku-cell[data-r="${rr}"][data-c="${cc}"]`);
+                        if (el) renderNotesInCell(el, rr, cc);
+                    }
+                }
+            }
+        }
+
         // ========== INPUT DE NÚMERO ==========
         function inputNumber(n) {
             if (finished) return;
@@ -1042,6 +1078,9 @@
             } else {
                 cell.classList.remove('error');
                 if (!given[r][c]) cell.classList.add('correct');
+
+                // *** NUEVO: Eliminar notas del mismo número en fila, columna y cuadrado ***
+                removeNotesAround(r, c, n);
             }
 
             if (!startTime) startTimer();
