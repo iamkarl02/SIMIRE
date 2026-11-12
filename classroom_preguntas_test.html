@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario Post-it 📝 - SIMIRE 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Comic Sans MS', system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 20% 10%, #fef3c7 0%, transparent 40%),
+      radial-gradient(circle at 80% 90%, #dbeafe 0%, transparent 40%),
+      linear-gradient(135deg, #fdf6e3 0%, #f0f9ff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 22px 14px;
+    color: #1a202c;
+  }
+  .container { max-width: 860px; margin: 0 auto; }
+
+  h1 {
+    text-align: center;
+    font-size: 1.7rem;
+    margin: 0 0 4px;
+    color: #2d3748;
+    text-shadow: 2px 2px 0 #fef3c7;
+  }
+  .subtitle {
+    text-align: center;
+    color: #718096;
+    margin-bottom: 22px;
+    font-size: .9rem;
+  }
+
+  /* ---------- PANEL DE CONFIGURACIÓN ---------- */
+  .setup-card {
+    background: #fffbea;
+    border: 4px dashed #f6ad55;
+    border-radius: 4px 20px 4px 20px;
+    padding: 22px 18px;
+    box-shadow: 6px 6px 0 rgba(246, 173, 85, .25);
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .setup-card::before {
+    content: "📎";
+    position: absolute;
+    top: -14px;
+    left: 18px;
+    font-size: 1.5rem;
+    transform: rotate(-20deg);
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #4a5568;
+    margin-bottom: 6px;
+  }
+  .field select {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    font-size: .95rem;
+    font-family: inherit;
+    background: #fff;
+    color: #1a202c;
+    cursor: pointer;
+    transition: border .15s;
+  }
+  .field select:focus { outline: none; border-color: #ed8936; }
+
+  .btn {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    color: #fff;
+    box-shadow: 3px 3px 0 rgba(221,107,32,.35);
+  }
+  .btn-primary:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 rgba(221,107,32,.4); }
+  .btn-primary:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(221,107,32,.35); }
+
+  .btn-secondary {
+    background: #edf2f7;
+    color: #4a5568;
+    box-shadow: 3px 3px 0 rgba(160,174,192,.3);
+  }
+  .btn-secondary:hover { background: #e2e8f0; transform: translate(-1px,-1px); }
+
+  .mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .mode-tab {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 3px solid #e2e8f0;
+    background: #fff;
+    font-size: .92rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .2s;
+    color: #4a5568;
+  }
+  .mode-tab:hover { border-color: #f6ad55; }
+  .mode-tab.active {
+    border-color: #ed8936;
+    background: #fffbea;
+    color: #dd6b20;
+    box-shadow: 3px 3px 0 rgba(237,137,54,.25);
+  }
+
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  /* ---------- CABECERA DEL QUIZ ---------- */
+  .quiz-header {
+    display: none;
+    background: #fff;
+    padding: 14px 18px;
+    border-radius: 4px 16px 4px 16px;
+    box-shadow: 3px 3px 0 rgba(0,0,0,.06);
+    margin-bottom: 14px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border: 1px solid #edf2f7;
+  }
+  .quiz-header .badge {
+    font-size: .85rem;
+    font-weight: 700;
+    color: #2d3748;
+    background: #fffbea;
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 2px 2px 0 rgba(246,173,85,.25);
+  }
+  .quiz-header .badge.score { background: #d8f5d0; box-shadow: 2px 2px 0 rgba(56,161,105,.25); }
+
+  #progress {
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    display: none;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
+  }
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    width: 0%;
+    transition: width .4s ease;
+    border-radius: 6px;
+  }
+
+  /* ---------- TARJETAS POST-IT ---------- */
+  .question-card {
+    position: relative;
+    padding: 24px 20px 20px;
+    margin-bottom: 22px;
+    border-radius: 2px;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.08),
+      0 6px 16px rgba(0,0,0,.08),
+      3px 4px 0 rgba(0,0,0,.04);
+    animation: pop .35s ease;
+    transform: rotate(-0.4deg);
+  }
+  .question-card:nth-child(even) { transform: rotate(0.4deg); }
+  .question-card:nth-child(3n) { transform: rotate(-0.7deg); }
+
+  .question-card::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 90px;
+    height: 22px;
+    background: rgba(255, 255, 255, .55);
+    border-left: 1px dashed rgba(0,0,0,.08);
+    border-right: 1px dashed rgba(0,0,0,.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+
+  .c-yellow { background: #fff9c4; }
+  .c-pink   { background: #ffd6e0; }
+  .c-blue   { background: #d4f0ff; }
+  .c-green  { background: #d8f5d0; }
+  .c-purple { background: #e9d8fd; }
+  .c-orange { background: #ffe0b3; }
+
+  @keyframes pop {
+    0% { opacity: 0; transform: translateY(14px) rotate(0deg) scale(.98); }
+    100% { opacity: 1; transform: translateY(0) rotate(-0.4deg) scale(1); }
+  }
+
+  .tema {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    background: rgba(255,255,255,.6);
+    color: #4a5568;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .pregunta {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 6px 0 16px;
+    color: #1a202c;
+    line-height: 1.4;
+  }
+
+  .opcion {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    margin: 9px 0;
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.55);
+    font-size: .94rem;
+    cursor: pointer;
+    transition: all .15s ease;
+    color: #1a202c;
+    font-family: inherit;
+    line-height: 1.35;
+  }
+  .opcion:hover:not(:disabled) {
+    background: rgba(255,255,255,.9);
+    border-color: #4299e1;
+    transform: translateX(3px);
+  }
+  .opcion:disabled { cursor: default; }
+  .opcion.correcta {
+    border-color: #38a169;
+    background: #c6f6d5 !important;
+    font-weight: 700;
+    box-shadow: 0 0 0 2px rgba(56,161,105,.25);
+  }
+  .opcion.incorrecta {
+    border-color: #e53e3e;
+    background: #fed7d7 !important;
+    color: #742a2a;
+  }
+
+  .explicacion {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,.65);
+    border-left: 4px solid #4299e1;
+    border-radius: 6px;
+    font-size: .9rem;
+    color: #2d3748;
+    line-height: 1.45;
+  }
+  .explicacion.visible { display: block; animation: fadeIn .3s; }
+  .explicacion::before { content: "💡 "; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .nav-buttons button {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    color: #4a5568;
+    font-weight: 700;
+    font-size: .9rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .nav-buttons button:hover:not(:disabled) { border-color: #ed8936; color: #dd6b20; }
+  .nav-buttons button:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- MODO LISTA (ESTUDIO) ---------- */
+  .study-list { display: flex; flex-direction: column; gap: 20px; }
+
+  .study-card {
+    position: relative;
+    padding: 22px 20px 18px;
+    border-radius: 2px;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.08),
+      0 6px 16px rgba(0,0,0,.08),
+      3px 4px 0 rgba(0,0,0,.04);
+    transform: rotate(-0.3deg);
+  }
+  .study-card:nth-child(even) { transform: rotate(0.3deg); }
+  .study-card::before {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 80px;
+    height: 20px;
+    background: rgba(255,255,255,.55);
+    border-left: 1px dashed rgba(0,0,0,.08);
+    border-right: 1px dashed rgba(0,0,0,.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+
+  .study-card .num {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    background: rgba(255,255,255,.65);
+    color: #4a5568;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-right: 6px;
+  }
+  .study-card .tema-tag {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    background: rgba(255,255,255,.65);
+    color: #4a5568;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .study-card .pregunta {
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin: 10px 0 14px;
+    line-height: 1.4;
+  }
+  .study-card .opcion-estudio {
+    display: block;
+    padding: 10px 13px;
+    margin: 7px 0;
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.5);
+    font-size: .92rem;
+    line-height: 1.35;
+  }
+  .study-card .opcion-estudio.correcta {
+    border-color: #38a169;
+    background: #c6f6d5;
+    font-weight: 700;
+    box-shadow: 0 0 0 2px rgba(56,161,105,.25);
+  }
+  .study-card .opcion-estudio.correcta::before {
+    content: "✅ ";
+  }
+  .study-card .expl {
+    margin-top: 12px;
+    padding: 11px 13px;
+    background: rgba(255,255,255,.7);
+    border-left: 4px solid #4299e1;
+    border-radius: 6px;
+    font-size: .88rem;
+    color: #2d3748;
+    line-height: 1.45;
+  }
+  .study-card .expl::before { content: "💡 "; }
+
+  /* ---------- RESULTADOS ---------- */
+  #results-screen {
+    display: none;
+    background: #fff;
+    padding: 30px 22px;
+    border-radius: 4px 20px 4px 20px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,.06);
+    text-align: center;
+    border: 1px solid #edf2f7;
+  }
+  #results-screen h2 { font-size: 1.5rem; margin-bottom: 16px; color: #2d3748; }
+  .score-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: #fffbea;
+    border: 6px solid #ed8936;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #dd6b20;
+    box-shadow: 0 4px 12px rgba(237,137,54,.25);
+  }
+  #results-screen p { color: #718096; margin-bottom: 22px; font-size: .95rem; }
+
+  /* ---------- MÓVIL ---------- */
+  @media (max-width: 480px) {
+    body { padding: 14px 10px; }
+    h1 { font-size: 1.35rem; }
+    .pregunta { font-size: .98rem; }
+    .opcion { font-size: .9rem; padding: 11px 12px; }
+    .quiz-header { padding: 10px 12px; }
+    .quiz-header .badge { font-size: .78rem; padding: 5px 10px; }
+    .score-circle { width: 110px; height: 110px; font-size: 1.7rem; }
+    .mode-tab { font-size: .85rem; padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📝 Cuestionario Post-it</h1>
+  <p class="subtitle">SIMIRE 2026 · Montaje y Mantenimiento de Equipos</p>
+
+  <!-- PANEL DE CONFIGURACIÓN -->
+  <div class="setup-card" id="setup-panel">
+    <!-- Pestañas de modo -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="test">🧪 Modo Test</button>
+      <button class="mode-tab" data-mode="lista">📋 Modo Lista</button>
+      <button class="mode-tab" data-mode="classroom">🎓 Preguntas Classroom</button>
+    </div>
+
+    <!-- Panel: TEST -->
+    <div class="mode-panel active" data-panel="test">
+      <div class="field">
+        <label for="cat-test">📂 Categoría de preguntas:</label>
+        <select id="cat-test">
+          <option value="todas">Todas las preguntas (89)</option>
+          <option value="test80">📖 Test Oficiales (IDs 1–80)</option>
+          <option value="tema21">2.1 Arquitectura Von Neumann</option>
+          <option value="tema22">2.2 Chipset</option>
+          <option value="tema23">2.3 Buses</option>
+          <option value="tema24">2.4 Componentes básicos</option>
+          <option value="practicas">🎓 Preguntas Classroom (IDs 101+)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="order-select">🔀 Orden de las preguntas:</label>
+        <select id="order-select">
+          <option value="orden">Secuencial (en orden)</option>
+          <option value="azar" selected>Aleatorio (al azar)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="iniciarTest()">🚀 Comenzar Test</button>
+    </div>
+
+    <!-- Panel: LISTA -->
+    <div class="mode-panel" data-panel="lista">
+      <div class="field">
+        <label for="cat-lista">📂 Categoría a estudiar:</label>
+        <select id="cat-lista">
+          <option value="tema21">2.1 Arquitectura Von Neumann</option>
+          <option value="tema22">2.2 Chipset</option>
+          <option value="tema23">2.3 Buses</option>
+          <option value="tema24">2.4 Componentes básicos</option>
+          <option value="test80">📖 Todos los Test Oficiales (1–80)</option>
+          <option value="practicas">🎓 Preguntas Classroom (IDs 101+)</option>
+          <option value="todas">Todas las preguntas</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="mostrarLista()">📋 Ver preguntas con respuestas</button>
+    </div>
+
+    <!-- Panel: CLASSROOM -->
+    <div class="mode-panel" data-panel="classroom">
+      <p style="font-size:.9rem;color:#4a5568;margin-bottom:14px;line-height:1.5;">
+        🎓 <strong>Preguntas de Classroom</strong> — Las 9 preguntas prácticas de los supuestos de examen (IDs 101+).
+      </p>
+      <div class="field">
+        <label for="cat-classroom">🎓 ¿Qué quieres hacer?</label>
+        <select id="cat-classroom">
+          <option value="practicas-test">🧪 Hacerlas en modo Test</option>
+          <option value="practicas-lista">📋 Ver lista con respuestas y explicaciones</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="iniciarClassroom()">🚀 Continuar</button>
+    </div>
+  </div>
+
+  <!-- CABECERA DEL QUIZ -->
+  <div class="quiz-header" id="quiz-header">
+    <div class="badge" id="stat-counter">Pregunta 1 / 89</div>
+    <div class="badge score" id="stat-score">✅ Aciertos: 0</div>
+  </div>
+  <div id="progress"><div id="progress-bar"></div></div>
+
+  <!-- TARJETA DE PREGUNTA (TEST) -->
+  <div id="quiz-container" style="display:none;">
+    <div class="question-card c-yellow" id="card-body">
+      <div class="tema" id="card-tag">Tema</div>
+      <div class="pregunta" id="card-question">Cargando pregunta...</div>
+      <div id="card-options"></div>
+      <div class="explicacion" id="card-explanation"></div>
+      <div class="nav-buttons">
+        <button id="btn-prev" onclick="preguntaAnterior()" disabled>⬅️ Anterior</button>
+        <button id="btn-next" onclick="siguientePregunta()" disabled>Siguiente ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODO LISTA -->
+  <div id="list-container" style="display:none;">
+    <div class="quiz-header" style="display:flex;">
+      <div class="badge" id="list-counter">Preguntas</div>
+      <button class="btn btn-secondary" style="width:auto;padding:8px 14px;font-size:.85rem;" onclick="reiniciarSetup()">← Volver</button>
+    </div>
+    <div class="study-list" id="study-list"></div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="results-screen">
+    <h2>🎉 ¡Test Completado!</h2>
+    <div class="score-circle" id="final-score-circle">0%</div>
+    <p id="final-message">Has finalizado todas las preguntas.</p>
+    <button class="btn btn-primary" onclick="reiniciarSetup()">🔄 Volver al Menú Principal</button>
+  </div>
+</div>
+
+<script>
+// ==================== BANCO DE PREGUNTAS ====================
+const TODAS_LAS_PREGUNTAS = [{"id":1,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Cuál es el rasgo definitorio fundamental de la arquitectura Von Neumann?","opciones":["A) El uso de memorias físicamente separadas para datos e instrucciones.","B) El empleo de una única memoria compartida tanto para datos como para instrucciones.","C) La ejecución de varias instrucciones de forma simultánea e independiente."],"respuesta_correcta":"B","explicacion":"La arquitectura Von Neumann se fundamenta en una única memoria compartida donde residen conjuntamente los datos y las instrucciones del programa."},{"id":2,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Cómo se denomina el ciclo repetitivo que ejecuta la CPU en este modelo?","opciones":["A) Ciclo de interrupción-procesamiento-almacenamiento.","B) Ciclo de lectura-escritura-actualización.","C) Ciclo de búsqueda-decodificación-ejecución (fetch-decode-execute)."],"respuesta_correcta":"C","explicacion":"La CPU ejecuta de forma continua el ciclo conocido como búsqueda-decodificación-ejecución (fetch-decode-execute)."},{"id":3,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En la arquitectura Von Neumann, ¿qué establece el principio de memoria única?","opciones":["A) Que el código y los datos residen en el mismo espacio de direcciones.","B) Que solo existe un registro interno para almacenar resultados.","C) Que la memoria RAM no puede comunicarse simultáneamente con los periféricos."],"respuesta_correcta":"A","explicacion":"El principio de memoria única establece que tanto el código de los programas como los datos ocupan el mismo espacio de direcciones."},{"id":4,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué determina el principio de secuencialidad en esta arquitectura?","opciones":["A) Las operaciones de la ALU deben ser siempre sumas antes que operaciones lógicas.","B) Las instrucciones se ejecutan una tras otra, salvo que una instrucción de salto altere el flujo.","C) La memoria debe paginarse de menor a mayor dirección física de manera fija."],"respuesta_correcta":"B","explicacion":"En Von Neumann, las instrucciones se procesan secuencialmente una tras otra salvo que una instrucción de salto modifique el flujo de control."},{"id":5,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Cuál es la función específica de la Unidad de Control (CU)?","opciones":["A) Almacenar de forma permanente las instrucciones del sistema operativo.","B) Realizar los cálculos lógicos y aritméticos requeridos por el programa.","C) Generar las señales de control que coordinan los pasos del ciclo del procesador."],"respuesta_correcta":"C","explicacion":"La Unidad de Control (CU) tiene como cometido coordinar los pasos del ciclo de procesamiento mediante la generación de señales de control."},{"id":6,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué misión cumple la Unidad Aritmético-Lógica (ALU)?","opciones":["A) Decodificar la siguiente instrucción contenida en la memoria RAM.","B) Ejecutar operaciones aritméticas y lógicas sobre los operandos.","C) Conectar físicamente la placa de pruebas con los buses del sistema."],"respuesta_correcta":"B","explicacion":"La Unidad Aritmético-Lógica (ALU) es el bloque encargado de realizar cálculos aritméticos y operaciones lógicas sobre los datos."},{"id":7,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué son los registros en el procesador según el modelo Von Neumann?","opciones":["A) Pequeñas áreas de almacenamiento interno que aceleran el procesamiento.","B) Líneas de cableado físico que unen la CPU con los módulos externos.","C) Dispositivos de almacenamiento masivo basados en semiconductores."],"respuesta_correcta":"A","explicacion":"Los registros son pequeñas áreas de memoria interna dentro del procesador (como PC, IR o AC) destinadas a acelerar la ejecución de tareas."},{"id":8,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿En qué consiste el denominado «cuello de botella de Von Neumann»?","opciones":["A) En la imposibilidad de ejecutar instrucciones de salto dentro del mismo espacio de memoria.","B) En que la CPU compite con la memoria por el mismo bus, ralentizando el acceso a datos e instrucciones.","C) En el sobrecalentamiento producido por el uso simultáneo de la ALU y la CU."],"respuesta_correcta":"B","explicacion":"Dicho cuello de botella se produce porque la CPU debe compartir el mismo bus con la memoria tanto para leer instrucciones como para leer/escribir datos, ralentizando el tráfico."},{"id":9,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En el ámbito del montaje y mantenimiento de equipos, ¿a qué hace referencia la «sintaxis» de la arquitectura?","opciones":["A) A la representación gráfica y simbólica de los componentes y sus interconexiones.","B) Al lenguaje binario que utiliza la máquina hipotética.","C) Al protocolo de comunicación serie utilizado por los periféricos."],"respuesta_correcta":"A","explicacion":"En el contexto de montaje de equipos, la sintaxis hace referencia a cómo se representan gráfica y simbólicamente los componentes y sus conexiones."},{"id":10,"tema":"2.1 Arquitectura Von Neumann","pregunta":"Al realizar el cableado en una placa de prueba, ¿qué pines se deben identificar primero en el controlador de memoria?","opciones":["A) Los pines de reloj y alimentación de la placa.","B) Los pines de dirección y de datos, que forman los buses.","C) Los pines de reinicio y parada forzada del sistema."],"respuesta_correcta":"B","explicacion":"El truco práctico indica localizar en primer lugar los pines de dirección y de datos del controlador de memoria, ya que constituyen los buses del sistema."},{"id":11,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué información almacena el Contador de Programa (PC)?","opciones":["A) La instrucción binaria completa que se está decodificando.","B) El código de operación que ejecutará la ALU a continuación.","C) La dirección de la siguiente instrucción a ejecutar."],"respuesta_correcta":"C","explicacion":"El Contador de Programa (Program Counter o PC) almacena la dirección de memoria donde se encuentra la siguiente instrucción a procesar."},{"id":12,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En microcontroladores de 8 bits, ¿cómo suele estar implementado físicamente el registro PC según el texto?","opciones":["A) Como un registro de 8 bits con salida PC_in.","B) Como un registro de 16 bits asociado a la señal PC_out.","C) Como una posición reservada de la memoria ROM accesible por software."],"respuesta_correcta":"B","explicacion":"El material señala que en microcontroladores de 8 bits el PC suele implementarse como un registro de 16 bits y emite la señal PC_out."},{"id":13,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Cuál es la función del Registro de Instrucción (IR)?","opciones":["A) Servir de acumulador temporal para resultados lógicos de la ALU.","B) Contener la instrucción que se está decodificando en el ciclo actual.","C) Guardar la dirección del siguiente bloque de datos en la memoria RAM."],"respuesta_correcta":"B","explicacion":"El Registro de Instrucción (Instruction Register o IR) retiene la instrucción que se encuentra actualmente en fase de decodificación."},{"id":14,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Hacia dónde se dirige la salida del Registro de Instrucción (IR)?","opciones":["A) Alimenta directamente la lógica de decodificación de la Unidad de Control.","B) Entra en el acumulador para realizar comprobaciones de paridad.","C) Se vuelca de manera directa al bus de direcciones."],"respuesta_correcta":"A","explicacion":"La salida del registro IR se conecta directamente con los circuitos de lógica de decodificación de la Unidad de Control (CU)."},{"id":15,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué papel cumple el Acumulador (AC)?","opciones":["A) Es el registro principal de la ALU para operandos y resultados.","B) Es el módulo encargado de generar la señal de carga IR_load.","C) Es el bus secundario que interconecta la RAM con los periféricos."],"respuesta_correcta":"A","explicacion":"El Acumulador (AC) es el registro básico de la ALU que retiene operandos antes del cómputo y almacena los resultados directos."},{"id":16,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En el montaje práctico, ¿qué consecuencia tiene un contacto sucio en los pines de entrada de la ALU?","opciones":["A) La sobretensión instantánea del registro PC.","B) El borrado completo de la memoria DIP-SRAM.","C) La obtención de resultados erróneos en sus operaciones."],"respuesta_correcta":"C","explicacion":"El texto advierte explícitamente de que una mala soldadura o un contacto sucio en las entradas de datos de la ALU provocará resultados erróneos."},{"id":17,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En placas de montaje, ¿en qué encapsulado suele presentarse comúnmente la memoria RAM?","opciones":["A) En formato DIP-SRAM.","B) En módulos BGA soldados.","C) En tarjetas extraíbles DIMM de alta velocidad."],"respuesta_correcta":"A","explicacion":"En las placas y entornos de montaje de prueba descritos, la memoria RAM suele implementarse mediante circuitos integrados con encapsulado DIP-SRAM."},{"id":18,"tema":"2.1 Arquitectura Von Neumann","pregunta":"¿Qué recomendación técnica de cableado se ofrece para los buses y cuál es su finalidad?","opciones":["A) Utilizar cables apantallados de par trenzado para suprimir ruidos de alta frecuencia.","B) Usar cables de calibre 22-AWG para evitar retardos por capacitancia.","C) Emplear pistas de cobre para reducir la inductancia de la ALU."],"respuesta_correcta":"B","explicacion":"Se recomienda emplear cables de calibre 22-AWG para los buses con el objetivo técnico de evitar retardos provocados por la capacitancia."},{"id":19,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En sistemas reales, ¿qué efecto tiene la separación física de los buses de datos y de direcciones?","opciones":["A) Invalida por completo el modelo conceptual de Von Neumann.","B) Reduce el consumo energético global al prescindir de la señal Ctrl.","C) Mejora la velocidad, manteniendo intacto el modelo conceptual de Von Neumann."],"respuesta_correcta":"C","explicacion":"Emplear buses físicos separados para datos y direcciones incrementa el rendimiento, pero la estructura y lógica conceptual de Von Neumann sigue siendo la misma."},{"id":20,"tema":"2.1 Arquitectura Von Neumann","pregunta":"En la máquina hipotética del simulador presentado en el documento, ¿cuáles son las características de palabra y dirección?","opciones":["A) 16 bits de palabra y 32 bits de dirección.","B) 8 bits de palabra y 16 bits de dirección.","C) 8 bits de palabra y 8 bits de dirección."],"respuesta_correcta":"B","explicacion":"El simulador interactivo ilustra el ciclo de funcionamiento sobre una máquina teórica estructurada con 8 bits de palabra y 16 bits de dirección."},{"id":21,"tema":"2.2 Chipset","pregunta":"¿Cuál es la función principal del chipset en un ordenador?","opciones":["A) Proporcionar exclusivamente alimentación eléctrica a la placa base y a los módulos de memoria.","B) Controlar la comunicación entre el procesador y los demás componentes del equipo.","C) Sustituir al firmware UEFI en la carga del sistema operativo."],"respuesta_correcta":"B","explicacion":"El chipset es el conjunto de circuitos que controla la comunicación de la CPU con la RAM, almacenamiento, tarjetas de expansión y puertos de E/S."},{"id":22,"tema":"2.2 Chipset","pregunta":"En la arquitectura tradicional de PC, ¿qué elementos gestiona el Northbridge?","opciones":["A) Los dispositivos de entrada/salida como puertos SATA, USB, audio y red.","B) El acceso a la memoria RAM, el bus del procesador y el control de PCI-Express.","C) Exclusivamente el arranque del sistema y el almacenamiento secundario."],"respuesta_correcta":"B","explicacion":"En la arquitectura tradicional, el Northbridge gestiona el acceso a la RAM, el bus de la CPU, PCIe y, a veces, la GPU integrada."},{"id":23,"tema":"2.2 Chipset","pregunta":"¿Qué funciones desempeña el Southbridge en la arquitectura clásica?","opciones":["A) Gestionar los dispositivos de entrada/salida: SATA, USB, audio, red, etc.","B) Controlar directamente la memoria RAM y el bus principal del procesador.","C) Integrar el reloj base del procesador y la memoria caché de nivel 3."],"respuesta_correcta":"A","explicacion":"El Southbridge es el controlador de E/S y se encarga de interfaces como SATA, USB, audio y red."},{"id":24,"tema":"2.2 Chipset","pregunta":"¿Con qué otro nombre técnico se denomina tradicionalmente al Northbridge?","opciones":["A) Controlador de periféricos.","B) Controlador de E/S.","C) Controlador de memoria."],"respuesta_correcta":"C","explicacion":"El Northbridge se conoce también técnicamente como controlador de memoria."},{"id":25,"tema":"2.2 Chipset","pregunta":"En los diseños de procesadores modernos (como Intel 2000 o AMD Zen), ¿dónde se ha integrado la mayor parte de las funciones del Northbridge?","opciones":["A) En la propia CPU.","B) En el módulo TPM de la placa base.","C) En una tarjeta de expansión PCI-Express secundaria."],"respuesta_correcta":"A","explicacion":"En arquitecturas modernas, la gran mayoría de funciones del Northbridge han pasado a integrarse dentro del encapsulado del procesador."},{"id":26,"tema":"2.2 Chipset","pregunta":"¿Cómo denomina Intel a su chipset en las arquitecturas modernas?","opciones":["A) FCH (Fusion Controller Hub).","B) PCH (Platform Controller Hub).","C) IOH (Input Output Hub)."],"respuesta_correcta":"B","explicacion":"Intel denomina PCH (Platform Controller Hub) a su chipset actual al haber absorbido la CPU gran parte del Northbridge."},{"id":27,"tema":"2.2 Chipset","pregunta":"¿Qué nombre recibe el chipset en las arquitecturas modernas de AMD?","opciones":["A) FCH (Fusion Controller Hub).","B) PCH (Platform Controller Hub).","C) APU (Accelerated Processing Unit)."],"respuesta_correcta":"A","explicacion":"AMD utiliza las siglas FCH (Fusion Controller Hub) para designar su bloque de chipset."},{"id":28,"tema":"2.2 Chipset","pregunta":"¿Qué diferencia conceptual existe entre el chipset y la placa base?","opciones":["A) Son términos completamente sinónimos que describen el mismo circuito integrado.","B) La placa base incluye el chipset, el trazado de pistas, los conectores físicos y el firmware.","C) El chipset contiene los conectores físicos externos y la placa base solo los buses de datos."],"respuesta_correcta":"B","explicacion":"La placa base es el soporte físico completo que integra el chipset junto a pistas, conectores y el firmware (BIOS/UEFI)."},{"id":29,"tema":"2.2 Chipset","pregunta":"En la denominación de un chipset, ¿a qué hace referencia la «Serie»?","opciones":["A) Al socket exacto en el que encaja mecánicamente el procesador.","B) A un grupo de productos con un mismo conjunto de características básicas.","C) Al número total de pistas PCIe que gestiona la CPU."],"respuesta_correcta":"B","explicacion":"La serie agrupa conjuntos de chipsets que comparten las mismas características y prestaciones básicas."},{"id":30,"tema":"2.2 Chipset","pregunta":"Según la nomenclatura descrita, ¿cuáles son series habituales de Intel y AMD respectivamente?","opciones":["A) Series Z, H, B en Intel y X, B, A en AMD.","B) Series X, B, A en Intel y Z, H, B en AMD.","C) Series LGA en Intel y AM en AMD."],"respuesta_correcta":"A","explicacion":"El texto señala las series Z, H y B para el fabricante Intel, y las series X, B y A para AMD."},{"id":31,"tema":"2.2 Chipset","pregunta":"¿Qué indica el «Número de generación» en la denominación de un chipset?","opciones":["A) La cantidad máxima de líneas PCI-Express aportadas por la placa base.","B) La generación del chipset, que habitualmente coincide con la del procesador.","C) La velocidad en gigahercios a la que trabaja el controlador de memoria."],"respuesta_correcta":"B","explicacion":"El número indica la generación a la que pertenece el chipset, que suele asociarse con la generación correspondiente de CPU."},{"id":32,"tema":"2.2 Chipset","pregunta":"En la denominación de un modelo de chipset (por ejemplo, Z790K), ¿qué indica una letra opcional como la «K»?","opciones":["A) Variantes especiales, como la orientación al overclocking.","B) Que es un chipset exclusivo para ordenadores portátiles de bajo consumo.","C) La incompatibilidad con almacenamiento de tipo SATA."],"respuesta_correcta":"A","explicacion":"Los sufijos o letras opcionales hacen referencia a variantes especiales, como la letra <<K>> para funciones de overclocking."},{"id":33,"tema":"2.2 Chipset","pregunta":"¿Qué comprobación es indispensable realizar para asegurar la compatibilidad entre el chipset y la CPU?","opciones":["A) Verificar siempre que el socket del chipset coincida con el de la CPU.","B) Comprobar que el número de puertos SATA sea superior a ocho.","C) Asegurar que el procesador tenga el mismo número de modelo que el chipset."],"respuesta_correcta":"A","explicacion":"Es una regla básica confirmar que el socket del chipset coincida con el socket que requiere el procesador a instalar."},{"id":34,"tema":"2.2 Chipset","pregunta":"¿Con qué socket está asociado el chipset Intel Z790 según la tabla de propiedades?","opciones":["A) AM5.","B) LGA 1700.","C) AM4."],"respuesta_correcta":"B","explicacion":"Según la tabla comparativa, el chipset Intel Z790 utiliza el socket LGA 1700."},{"id":35,"tema":"2.2 Chipset","pregunta":"¿Cuántas líneas PCIe propias aporta el chipset (PCH) en el modelo Intel Z790?","opciones":["A) 24 líneas.","B) 28 líneas.","C) 16 líneas."],"respuesta_correcta":"A","explicacion":"El modelo Z790 proporciona 24 líneas PCIe desde el propio PCH (además de las 28 de la CPU de 13.º generación)."},{"id":36,"tema":"2.2 Chipset","pregunta":"¿Cuál de las siguientes es una característica propia del chipset Intel B660 según la documentación técnica?","opciones":["A) Soporte para overclocking total y memoria DDR5-6600.","B) Ausencia de overclocking, soporte DDR4/DDR5 y enfoque para equipos de oficina.","C) Incorporación exclusiva de conectividad USB 3.2 Gen 2x2."],"respuesta_correcta":"B","explicacion":"El chipset B660 no incluye capacidades de overclocking, admite DDR4/DDR5 y está orientado como opción económica de oficina."},{"id":37,"tema":"2.2 Chipset","pregunta":"¿Qué soporte máximo de memoria DDR5 ofrece el chipset AMD X670E según la tabla comparativa?","opciones":["A) DDR5-5200.","B) DDR5-5600.","C) DDR5-6600."],"respuesta_correcta":"C","explicacion":"La tabla técnica detalla que el chipset AMD X670E admite velocidades de memoria DDR5 de hasta 6600 MT/s."},{"id":38,"tema":"2.2 Chipset","pregunta":"¿En qué componentes admite tecnología PCIe 5.0 el chipset AMD X670E?","opciones":["A) En la GPU y el SSD.","B) Únicamente en los puertos de red y audio.","C) Exclusivamente en las conexiones de los puertos USB."],"respuesta_correcta":"A","explicacion":"El chipset X670E destaca por implementar carriles PCIe 5.0 orientados a la tarjeta gráfica (GPU) y al almacenamiento sólido (SSD)."},{"id":39,"tema":"2.2 Chipset","pregunta":"¿Con qué serie de procesadores es compatible el chipset AMD B550 según las especificaciones técnicas?","opciones":["A) Únicamente con CPUs AMD de socket AM5.","B) Con CPUs Ryzen 3000-5000.","C) Con procesadores Intel Core de 13.ª generación."],"respuesta_correcta":"B","explicacion":"La tabla de propiedades especifica que el chipset AMD B550 (socket AM4) es compatible con la serie Ryzen 3000-5000."},{"id":40,"tema":"2.2 Chipset","pregunta":"¿Cuántos puertos SATA (a 6 Gb/s) proporciona el chipset AMD B550 según la tabla de propiedades?","opciones":["A) 8 puertos.","B) 4 puertos.","C) 6 puertos."],"respuesta_correcta":"C","explicacion":"En la tabla comparativa se especifica que el chipset AMD B550 cuenta con 6 puertos de almacenamiento SATA a 6 Gb/s."},{"id":41,"tema":"2.3 Buses","pregunta":"¿Cómo se define un bus en la arquitectura de computadores según el texto?","opciones":["A) Como un conjunto de conductores que permite la transmisión de información entre distintos bloques del sistema.","B) Como un circuito integrado exclusivo para la comunicación entre la memoria RAM y el disco duro.","C) Como una interfaz de software que gestiona los puertos externos del chasis del ordenador."],"respuesta_correcta":"A","explicacion":"Un bus se define como un conjunto de conductores (líneas físicas o lógicas) que permite la transmisión de información entre los distintos bloques del sistema."},{"id":42,"tema":"2.3 Buses","pregunta":"En la práctica, ¿de qué forma física se implementa un bus en la placa base?","opciones":["A) Como un cable coaxial dedicado para cada componente interno.","B) Como un único chip controlador con memoria de intercambio propia.","C) Como una serie de pines que comparten un mismo medio de transmisión."],"respuesta_correcta":"C","explicacion":"En la práctica se implementa como una serie de pines en la placa base que comparten un mismo medio de transmisión."},{"id":43,"tema":"2.3 Buses","pregunta":"Según el documento, ¿para qué tareas resulta esencial la correcta gestión de los buses?","opciones":["A) Para el diseño de páginas web y hojas de estilo en el navegador.","B) Para el montaje y el mantenimiento de equipos informáticos.","C) Para la programación de controladores de red de área local."],"respuesta_correcta":"B","explicacion":"El texto señala textualmente que la correcta gestión de los buses es esencial para el montaje y el mantenimiento de equipos informáticos."},{"id":44,"tema":"2.3 Buses","pregunta":"En la sintaxis descriptiva de hardware expuesta en el tema, ¿cuáles son los campos que definen un bus?","opciones":["A) tipo, ancho, velocidad y conectores.","B) nombre, longitud, voltaje e interfaz.","C) protocolo, latencia, frecuencia y ranuras."],"respuesta_correcta":"A","explicacion":"La sintaxis simplificada define cuatro propiedades: tipo, ancho, velocidad y conectores."},{"id":45,"tema":"2.3 Buses","pregunta":"En el ejemplo de hoja de datos para el bus PCIe que se muestra en la sintaxis, ¿qué valor tiene el campo «tipo»?","opciones":["A) control","B) data","C) address"],"respuesta_correcta":"B","explicacion":"En el bloque del ejemplo real se especifica textualmente tipo: data;."},{"id":46,"tema":"2.3 Buses","pregunta":"Según la extracción de la hoja de datos del bus PCIe proporcionada, ¿qué valor se indica para su velocidad?","opciones":["A) 100","B) 33","C) 2500"],"respuesta_correcta":"C","explicacion":"En la notación del ejemplo PCIe se indica el parámetro velocidad: 2500;."},{"id":47,"tema":"2.3 Buses","pregunta":"En el ejemplo de sintaxis del bus PCIe, ¿qué elementos aparecen listados en el parámetro «conectores»?","opciones":["A) [CPU, GPU, SSD]","B) [CPU, RAM, HDD]","C) [Placa base, Chipset, GPU]"],"respuesta_correcta":"A","explicacion":"El ejemplo del texto detalla la lista de conectores como [CPU, GPU, SSD]."},{"id":48,"tema":"2.3 Buses","pregunta":"De acuerdo con la tabla de propiedades, ¿qué describe la propiedad «Ancho»?","opciones":["A) La distancia en milímetros entre las pistas de cobre de la placa base.","B) El número de bits que el bus puede transportar simultáneamente.","C) La tasa de transferencia medida en megahercios por segundo."],"respuesta_correcta":"B","explicacion":"La tabla de propiedades define «Ancho» como el número de bits que el bus puede transportar simultáneamente."},{"id":49,"tema":"2.3 Buses","pregunta":"Según la tabla de propiedades, ¿cuáles son los valores típicos para el ancho de un bus?","opciones":["A) 1, 2, 4, 8 bits.","B) 128, 256, 512, 1024 bits.","C) 8, 16, 32, 64 bits."],"respuesta_correcta":"C","explicacion":"Los valores típicos recogidos en la tabla para el ancho son 8, 16, 32 y 64 bits."},{"id":50,"tema":"2.3 Buses","pregunta":"¿Cuáles son los valores típicos que puede tomar la propiedad «Tipo» según la tabla de propiedades?","opciones":["A) data, address, control","B) serie, paralelo, mixto","C) síncrono, asíncrono, diferencial"],"respuesta_correcta":"A","explicacion":"La clasificación por función o tipo contempla los valores data, address y control."},{"id":51,"tema":"2.3 Buses","pregunta":"¿Cuáles de los siguientes estándares se citan como ejemplos comerciales en la tabla de propiedades?","opciones":["A) SATA, SCSI, IDE, NVMe.","B) ISA, PCI, PCI-Express, USB.","C) AGP, AMR, CNR, VESA."],"respuesta_correcta":"B","explicacion":"Los ejemplos comerciales citados en la tabla son ISA, PCI, PCI-Express y USB."},{"id":52,"tema":"2.3 Buses","pregunta":"Según la tabla de propiedades, ¿qué indica la propiedad «Dirección»?","opciones":["A) La ruta hexadecimal de la memoria donde residen los datos.","B) El sentido físico de la corriente eléctrica por las pistas.","C) En qué parte del sistema se origina o termina la comunicación."],"respuesta_correcta":"C","explicacion":"La tabla define la propiedad «Dirección» como la indicación de en qué parte del sistema se origina o termina el bus (p. ej., CPU → Memoria)."},{"id":53,"tema":"2.3 Buses","pregunta":"Cuando el ancho del bus es insuficiente para la carga de trabajo, ¿dónde suele originarse el cuello de botella?","opciones":["A) En el bus de datos.","B) En el bus de direcciones.","C) En el bus de control."],"respuesta_correcta":"A","explicacion":"El apartado «Truco» destaca que el cuello de botella suele aparecer en el bus de datos cuando el ancho es insuficiente."},{"id":54,"tema":"2.3 Buses","pregunta":"¿Qué solución habitual se propone en el texto para resolver un cuello de botella provocado por un ancho insuficiente?","opciones":["A) Disminuir la memoria para forzar transferencias de datos más pequeñas.","B) Pasar a un bus de mayor ancho (como de 32 a 64 bits) o aumentar la frecuencia.","C) Sustituir el bus de datos por dos buses de direcciones en paralelo."],"respuesta_correcta":"B","explicacion":"El texto propone como solución pasar a un bus de mayor ancho (p. ej., de 32 a 64 bits) o aumentar la frecuencia."},{"id":55,"tema":"2.3 Buses","pregunta":"En la primera demo interactiva, ¿qué tamaño y valor tiene el dato enviado por la CPU a la memoria?","opciones":["A) Una palabra de 16 bits con el valor 0x010.","B) Cuatro bytes concatenados con el valor 0x5C.","C) Un byte (8 bits) con el valor 0x3A."],"respuesta_correcta":"C","explicacion":"En el código de la demo interactiva se define la constante data = 0x3A correspondiente a 8 bits (un byte)."},{"id":56,"tema":"2.3 Buses","pregunta":"En el apartado de ejemplos prácticos, ¿qué aclaración técnica se realiza sobre el hardware real frente a la simulación?","opciones":["A) Que en hardware real el bus transporta bits y no «cadenas».","B) Que los buses reales nunca presentan retardos temporales.","C) Que los buses de datos solo pueden transferir caracteres ASCII."],"respuesta_correcta":"A","explicacion":"El cuadro de aviso indica expresamente que en hardware real el bus transporta bits y no cadenas, siendo esto último una simplificación didáctica."},{"id":57,"tema":"2.3 Buses","pregunta":"En el diagrama de bloques de la práctica guiada, ¿cuáles son las características del bus de direcciones?","opciones":["A) 64 bits y 250 MHz.","B) 32 bits y 100 MHz.","C) 16 bits y 33 MHz."],"respuesta_correcta":"B","explicacion":"En el diagrama textual se asocia a la CPU con el Bus de direcciones de 32 bits y 100 MHz hacia la memoria."},{"id":58,"tema":"2.3 Buses","pregunta":"En el diagrama de bloques de la práctica guiada, ¿qué ancho y velocidad tiene el bus de datos?","opciones":["A) 32 bits y 100 MHz.","B) 128 bits y 500 MHz.","C) 64 bits y 250 MHz."],"respuesta_correcta":"C","explicacion":"El diagrama de bloques muestra que el Bus de datos tiene un ancho de 64 bits y opera a 250 MHz."},{"id":59,"tema":"2.3 Buses","pregunta":"En los pasos a seguir de la práctica guiada, ¿qué valores de dirección y dato genera la CPU como ejemplo?","opciones":["A) Dirección 0x0010 y dato 0x5C.","B) Dirección 0x3A y dato 0x0010.","C) Dirección 0x5C y dato 0x2500."],"respuesta_correcta":"A","explicacion":"El paso 3 de la práctica guiada establece como ejemplo generar una dirección 0x0010 y un dato 0x5C."},{"id":60,"tema":"2.3 Buses","pregunta":"De acuerdo con la lógica de la práctica guiada, ¿cómo se coordina la transferencia entre el bus de direcciones y el de datos?","opciones":["A) El bus de datos envía primero el dato y luego el de direcciones indica la procedencia.","B) El bus de direcciones muestra la dirección y, tras un retardo, la pasa al bus de datos, que transporta y escribe el dato en la memoria.","C) Ambos buses transmiten simultáneamente sin retardo y la memoria decide qué bus procesar primero."],"respuesta_correcta":"B","explicacion":"Según la lógica descrita, el bus de direcciones muestra la dirección y, tras un retardo, la pasa al bus de datos, el cual transporta el dato y lo escribe en la memoria."},{"id":61,"tema":"2.4 Componentes básicos","pregunta":"¿Cuál es la función principal de la fuente de alimentación (PSU) según la nomenclatura técnica?","opciones":["A) Proteger el chasis y facilitar la ventilación interna.","B) Convertir corriente alterna (AC) a corriente continua (DC) y distribuir energía.","C) Suministrar datos directos a las ranuras PCIe de la placa base."],"respuesta_correcta":"B","explicacion":"La PSU convierte la corriente alterna en continua (AC a DC) y la distribuye a los componentes."},{"id":62,"tema":"2.4 Componentes básicos","pregunta":"¿Dónde se ubica típicamente la placa base (MB) en el chasis?","opciones":["A) En las bahías de 2,5\" y 3,5\".","B) En la parte trasera inferior, sin soporte adicional.","C) Ocupa el centro del chasis, sujeta a los standoffs."],"respuesta_correcta":"C","explicacion":"La placa base se sitúa en el centro del chasis fijada sobre los tornillos separadores o standoffs."},{"id":63,"tema":"2.4 Componentes básicos","pregunta":"¿En qué ranura de la placa base se conecta habitualmente la tarjeta gráfica (GPU)?","opciones":["A) En la ranura PCI-E x16.","B) En las ranuras SO-DIMM.","C) En el conector M.2 de almacenamiento."],"respuesta_correcta":"A","explicacion":"La GPU se instala típicamente en la ranura de expansión PCI-E x16 de la placa base."},{"id":64,"tema":"2.4 Componentes básicos","pregunta":"¿Cuáles son los parámetros críticos de la CPU según la tabla de propiedades?","opciones":["A) Capacidad (GB), velocidad (MHz) y latencia.","B) Número de núcleos, frecuencia (GHz) y TDP (W).","C) Flujo (CFM), tipo (air, liquid) y ruido (dB)."],"respuesta_correcta":"B","explicacion":"Los parámetros críticos de la CPU son el número de núcleos, la frecuencia en GHz y el TDP en vatios."},{"id":65,"tema":"2.4 Componentes básicos","pregunta":"¿Qué interfaz física de conexión utiliza la memoria RAM?","opciones":["A) Ranuras DIMM/SO-DIMM.","B) Conectores SATA y PCIe.","C) Socket LGA o PGA."],"respuesta_correcta":"A","explicacion":"La memoria RAM se conecta en las ranuras DIMM (para sobremesa) o SO-DIMM (para portátiles)."},{"id":66,"tema":"2.4 Componentes básicos","pregunta":"¿Qué tipos de socket se indican para la interfaz de conexión del procesador (CPU)?","opciones":["A) ATX y EPS.","B) LGA y PGA.","C) Molex y SATA."],"respuesta_correcta":"B","explicacion":"La interfaz física de conexión de la CPU con la placa base se especifica mediante sockets de tipo LGA o PGA."},{"id":67,"tema":"2.4 Componentes básicos","pregunta":"¿Cuáles son los parámetros críticos definidos para la memoria RAM?","opciones":["A) Capacidad (GB), velocidad (MHz) y latencia.","B) Núcleos CUDA, memoria VRAM y TDP.","C) Certificación (80+), modularidad y potencia (W)."],"respuesta_correcta":"A","explicacion":"Las características críticas de la memoria RAM son su capacidad (GB), velocidad (MHz) y latencia."},{"id":68,"tema":"2.4 Componentes básicos","pregunta":"¿Cuál es la función principal del Cooler?","opciones":["A) Distribuir la corriente continua por todo el interior del chasis.","B) Renderizar la información visual y procesar cómputo paralelo.","C) Disipar calor de la CPU y otros componentes."],"respuesta_correcta":"C","explicacion":"La función del cooler es disipar el calor generado por el procesador y otros componentes para mantener temperaturas operativas."},{"id":69,"tema":"2.4 Componentes básicos","pregunta":"¿Cuáles son los parámetros críticos de la fuente de alimentación (PSU)?","opciones":["A) Chipset, factor de forma y puertos I/O.","B) Potencia (W), certificación (80+) y modularidad.","C) Tipo (HDD/SSD), capacidad (TB) y velocidad (RPM/NVMe)."],"respuesta_correcta":"B","explicacion":"La fuente de alimentación se evalúa por su potencia en vatios, el nivel de certificación 80+ y el grado de modularidad del cableado."},{"id":70,"tema":"2.4 Componentes básicos","pregunta":"¿Qué parámetros críticos caracterizan a los dispositivos de disco?","opciones":["A) Capacidad (TB), tipo (HDD/SSD) y velocidad (RPM/NVMe).","B) Flujo (CFM), nivel de ruido (dB) y factor de forma.","C) Memoria VRAM, frecuencia (GHz) y latencia."],"respuesta_correcta":"A","explicacion":"En el almacenamiento importan la capacidad (TB), la tecnología empleada (HDD o SSD) y la velocidad (RPM o NVMe)."},{"id":71,"tema":"2.4 Componentes básicos","pregunta":"¿Cuáles son los parámetros críticos de la GPU?","opciones":["A) Memoria VRAM, núcleos CUDA/Stream y TDP.","B) Conectores EPS, certificación (80+) y modularidad.","C) Número de núcleos, factor de forma y puertos I/O."],"respuesta_correcta":"A","explicacion":"La GPU depende de la cantidad de memoria VRAM, la cantidad de núcleos de procesamiento (CUDA/stream) y su consumo térmico (TDP)."},{"id":72,"tema":"2.4 Componentes básicos","pregunta":"¿En qué unidad se mide el flujo del sistema de refrigeración (Cooler)?","opciones":["A) W.","B) CFM.","C) dB."],"respuesta_correcta":"B","explicacion":"El flujo de aire generado por los ventiladores de refrigeración se mide en CFM (pies cúbicos por minuto)."},{"id":73,"tema":"2.4 Componentes básicos","pregunta":"¿Qué factores de forma de chasis se recogen en la tabla de propiedades?","opciones":["A) DIMM, SO-DIMM y PCIe.","B) ATX, micro-ATX y mini-ITX.","C) LGA, PGA Y M.2."],"respuesta_correcta":"B","explicacion":"Los factores de forma de chasis recogidos en el documento son ATX, micro-ATX y mini-ITX."},{"id":74,"tema":"2.4 Componentes básicos","pregunta":"¿Qué tipos de cables se citan en los parámetros críticos de las conexiones internas?","opciones":["A) VRAM, CUDA y Stream.","B) ATX, Molex y SATA.","C) LGA, NVMe y EPS."],"respuesta_correcta":"B","explicacion":"El texto detalla específicamente los tipos de cables ATX, Molex y SATA dentro de sus parámetros críticos."},{"id":75,"tema":"2.4 Componentes básicos","pregunta":"¿Dónde se instalan típicamente los discos HDD o SSD?","opciones":["A) En el socket central o en las ranuras DIMM.","B) En bahías de 2,5\"/3,5\" o ranuras M.2.","C) Exclusivamente sobre los standoffs de la placa base."],"respuesta_correcta":"B","explicacion":"Los dispositivos de almacenamiento se alojan en las bahías internas de 2,5\" o 3,5\", o bien en ranuras M.2 directas."},{"id":76,"tema":"2.4 Componentes básicos","pregunta":"¿Qué conectores específicos utiliza la fuente de alimentación como interfaz?","opciones":["A) Conectores ATX, EPS, PCIe y SATA.","B) Conectores LGA, PGA Y DIMM.","C) Conectores SO-DIMM, USB y M.2."],"respuesta_correcta":"A","explicacion":"La fuente suministra corriente a través de conectores específicos ATX, EPS, PCIe y SATA."},{"id":77,"tema":"2.4 Componentes básicos","pregunta":"En los ejemplos del tema, ¿qué especificaciones técnicas se muestran para el procesador Intel Core i7-12700K?","opciones":["A) 16 núcleos, 3.2 GHz y TDP de 65 W.","B) 8 núcleos, 4.0 GHz y TDP de 95 W.","C) 12 núcleos, 3.6 GHz y TDP de 125 W."],"respuesta_correcta":"C","explicacion":"El ejemplo del texto detalla que el Intel Core i7-12700K cuenta con 12 núcleos, 3.6 GHz y 125 W de TDP."},{"id":78,"tema":"2.4 Componentes básicos","pregunta":"¿Qué modelo de socket se señala como compatible con los procesadores Intel de 12ª generación?","opciones":["A) LGA 1700.","B) PGA 1200.","C) Socket AM4."],"respuesta_correcta":"A","explicacion":"La sección de trucos indica expresamente el socket LGA 1700 para los micros Intel de 12º generación."},{"id":79,"tema":"2.4 Componentes básicos","pregunta":"Para evitar daños por electricidad estática al manipular la RAM o la CPU, ¿qué medida de seguridad se recomienda?","opciones":["A) Desconectar los cables SATA antes de encender el equipo.","B) Usar una pulsera antiestática o tocar una parte metálica del chasis.","C) Limpiar las ranuras de conexión con aire a presión."],"respuesta_correcta":"B","explicacion":"El aviso de seguridad exige usar una pulsera antiestática o tocar metal del chasis para evitar descargas electrostáticas sobre RAM o CPU."},{"id":80,"tema":"2.4 Componentes básicos","pregunta":"¿Cuáles son los parámetros críticos de la placa base según la tabla de propiedades?","opciones":["A) Chipset, factor de forma y puertos I/O","B) Capacidad (TB), tipo (air/liquid) y latencia.","C) TDP (W), certificación (80+) y modularidad."],"respuesta_correcta":"A","explicacion":"Las propiedades críticas que definen a la placa base son su chipset, el factor de forma y los puertos I/O disponibles."},{"id":101,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"En el diagrama de la CPU, ¿qué registro [A] almacena la dirección de memoria de la siguiente instrucción que debe ejecutarse?","opciones":["A) Registro de Instrucción (IR)","B) Contador de Programa (PC)","C) Registro de Dirección de Memoria (MAR)"],"respuesta_correcta":"B","explicacion":"El Contador de Programa (PC) almacena la dirección de memoria de la siguiente instrucción que debe ejecutarse."},{"id":102,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"En el diagrama de la CPU, ¿qué registro [B] contiene la instrucción actual que está siendo decodificada y ejecutada por la Unidad de Control?","opciones":["A) Registro de Instrucción (IR)","B) Contador de Programa (PC)","C) Registro de Búfer de Memoria (MBR)"],"respuesta_correcta":"A","explicacion":"El Registro de Instrucción (IR) contiene la instrucción actual que se encuentra en fase de decodificación por la Unidad de Control."},{"id":103,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"En el diagrama de la CPU, ¿qué registro [C] guarda la dirección de memoria a la que se desea acceder?","opciones":["A) Registro de Búfer de Memoria (MBR)","B) Contador de Programa (PC)","C) Registro de Dirección de Memoria (MAR)"],"respuesta_correcta":"C","explicacion":"El MAR (Memory Address Register) guarda la dirección de memoria a la que se desea acceder y la coloca en el bus de direcciones."},{"id":104,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"En el diagrama de la CPU, ¿qué registro [D] almacena temporalmente los datos o instrucciones que se transfieren entre la CPU y la memoria?","opciones":["A) Registro de Búfer de Memoria (MBR)","B) Acumulador (AC)","C) Registro de Instrucción (IR)"],"respuesta_correcta":"A","explicacion":"El MBR (Memory Buffer Register) almacena temporalmente los datos o instrucciones transferidos a través del bus de datos con la memoria."},{"id":105,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"¿Cuál es el orden cronológico correcto (Y → X → Z) de la fase de búsqueda (Fetch)?","opciones":["A) Z (PC al IR) -> Y (PC al MAR) -> X (Memoria al MBR)","B) Y (PC al MAR y bus de direcciones) -> X (Memoria al MBR por bus de datos) -> Z (MBR al IR y se incrementa PC)","C) X (Memoria al MBR) -> Z (MBR al IR) -> Y (PC al MAR)"],"respuesta_correcta":"B","explicacion":"Primero el PC va al MAR y bus de direcciones (Y), luego viaja al MBR por el bus de datos (X), y finalmente pasa al IR decodificándose mientras se incrementa el PC (Z)."},{"id":106,"tema":"🎓 Classroom · 2.1 Von Neumann","pregunta":"¿Por qué se produce fundamentalmente el «cuello de botella de Von Neumann» en relación con los buses?","opciones":["A) Porque la CPU utiliza buses independientes físicos infinitos para datos e instrucciones.","B) Porque la CPU comparte el mismo camino de comunicación (buses) con la memoria tanto para leer instrucciones como para leer/escribir datos de forma secuencial.","C) Porque la velocidad de los buses supera con creces la velocidad de procesamiento de la CPU."],"respuesta_correcta":"B","explicacion":"El cuello de botella ocurre porque la CPU compite por el mismo camino/bus hacia la memoria, obligando a realizar accesos de forma secuencial y no simultánea."},{"id":107,"tema":"🎓 Classroom · 2.2 Placa Base","pregunta":"En una placa base estándar, ¿qué componente fundamental se conecta en la ranura [4] (PCIe x16)?","opciones":["A) Memoria RAM DIMM","B) Tarjeta Gráfica Dedicada (GPU)","C) Almacenamiento M.2 NVMe"],"respuesta_correcta":"B","explicacion":"La ranura PCIe x16 está destinada principalmente a la conexión de la tarjeta gráfica dedicada (GPU)."},{"id":108,"tema":"🎓 Classroom · 2.2 Placa Base","pregunta":"Si un usuario intenta instalar un módulo de memoria DDR4 en las ranuras de una placa diseñada para DDR5, ¿qué ocurrirá?","opciones":["A) Funcionará a menor velocidad de manera compatible.","B) No encajará físicamente debido a la diferente posición de la muesca y el sistema no iniciará por incompatibilidad eléctrica.","C) Arrancará pero con errores de paridad corregidos por la BIOS."],"respuesta_correcta":"B","explicacion":"La muesca física en DDR4 y DDR5 difiere para impedir errores mecánicos, y los voltajes y pines son totalmente incompatibles."},{"id":109,"tema":"🎓 Classroom · 2.2 Placa Base","pregunta":"En las arquitecturas de placas base modernas, el chip del Chipset (PCH), ¿a qué componente tradicional equivale funcionalmente?","opciones":["A) Al Northbridge, controlando la RAM y la GPU principal directamente.","B) Al Southbridge, gestionando E/S secundarias, SATA, USB, audio y red, ya que el Northbridge fue absorbido por la CPU.","C) Exclusivamente al generador de reloj del sistema operativo."],"respuesta_correcta":"B","explicacion":"Las funciones del Northbridge pasaron a la CPU; el chipset actual equivale al Southbridge (PCH) gestionando periféricos y E/S."}];
+
+// ==================== ESTADO ====================
+const COLORES = ['c-yellow','c-pink','c-blue','c-green','c-purple','c-orange'];
+let preguntasActivas = [];
+let indiceActual = 0;
+let respuestasUsuario = {};
+
+// ==================== ELEMENTOS ====================
+const setupPanel = document.getElementById('setup-panel');
+const quizHeader = document.getElementById('quiz-header');
+const progressEl = document.getElementById('progress');
+const progressBar = document.getElementById('progress-bar');
+const quizContainer = document.getElementById('quiz-container');
+const listContainer = document.getElementById('list-container');
+const cardBody = document.getElementById('card-body');
+const cardTag = document.getElementById('card-tag');
+const cardQuestion = document.getElementById('card-question');
+const cardOptions = document.getElementById('card-options');
+const cardExplanation = document.getElementById('card-explanation');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+const resultsScreen = document.getElementById('results-screen');
+const statCounter = document.getElementById('stat-counter');
+const statScore = document.getElementById('stat-score');
+
+// ==================== TABS DE MODO ====================
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.mode;
+    document.querySelector(`.mode-panel[data-panel="${mode}"]`).classList.add('active');
+  });
+});
+
+// ==================== FILTROS ====================
+function filtrarPreguntas(cat) {
+  if (cat === 'todas') return [...TODAS_LAS_PREGUNTAS];
+  if (cat === 'test80') return TODAS_LAS_PREGUNTAS.filter(q => q.id >= 1 && q.id <= 80);
+  if (cat === 'practicas') return TODAS_LAS_PREGUNTAS.filter(q => q.id >= 101);
+  if (cat === 'tema21') return TODAS_LAS_PREGUNTAS.filter(q => q.tema.includes('2.1') && q.id < 101);
+  if (cat === 'tema22') return TODAS_LAS_PREGUNTAS.filter(q => q.tema.includes('2.2') && q.id < 101);
+  if (cat === 'tema23') return TODAS_LAS_PREGUNTAS.filter(q => q.tema.includes('2.3') && q.id < 101);
+  if (cat === 'tema24') return TODAS_LAS_PREGUNTAS.filter(q => q.tema.includes('2.4') && q.id < 101);
+  return [...TODAS_LAS_PREGUNTAS];
+}
+
+function barajar(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ==================== MODO TEST ====================
+function iniciarTest() {
+  const cat = document.getElementById('cat-test').value;
+  const orden = document.getElementById('order-select').value;
+
+  preguntasActivas = filtrarPreguntas(cat);
+  if (preguntasActivas.length === 0) { alert('No hay preguntas en esta categoría.'); return; }
+  if (orden === 'azar') barajar(preguntasActivas);
+
+  indiceActual = 0;
+  respuestasUsuario = {};
+
+  setupPanel.style.display = 'none';
+  listContainer.style.display = 'none';
+  quizHeader.style.display = 'flex';
+  progressEl.style.display = 'block';
+  quizContainer.style.display = 'block';
+  resultsScreen.style.display = 'none';
+
+  cargarPregunta();
+}
+
+function iniciarClassroom() {
+  const opcion = document.getElementById('cat-classroom').value;
+  preguntasActivas = filtrarPreguntas('practicas');
+
+  if (opcion === 'practicas-lista') {
+    setupPanel.style.display = 'none';
+    quizContainer.style.display = 'none';
+    quizHeader.style.display = 'none';
+    progressEl.style.display = 'none';
+    resultsScreen.style.display = 'none';
+    renderizarLista(preguntasActivas, '🎓 Preguntas de Classroom');
+    listContainer.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    barajar(preguntasActivas);
+    indiceActual = 0;
+    respuestasUsuario = {};
+    setupPanel.style.display = 'none';
+    listContainer.style.display = 'none';
+    quizHeader.style.display = 'flex';
+    progressEl.style.display = 'block';
+    quizContainer.style.display = 'block';
+    resultsScreen.style.display = 'none';
+    cargarPregunta();
+  }
+}
+
+function cargarPregunta() {
+  const q = preguntasActivas[indiceActual];
+  statCounter.textContent = `Pregunta ${indiceActual + 1} / ${preguntasActivas.length}`;
+  const aciertos = Object.values(respuestasUsuario).filter(r => r.esCorrecta).length;
+  statScore.textContent = `✅ Aciertos: ${aciertos}`;
+  progressBar.style.width = ((indiceActual + 1) / preguntasActivas.length) * 100 + '%';
+
+  cardBody.className = 'question-card ' + COLORES[indiceActual % COLORES.length];
+  cardTag.textContent = q.tema;
+  cardQuestion.textContent = q.pregunta;
+  cardOptions.innerHTML = '';
+  cardExplanation.textContent = q.explicacion || '';
+  cardExplanation.classList.remove('visible');
+
+  const guardada = respuestasUsuario[indiceActual];
+  const letraCorrecta = (q.respuesta_correcta || '').trim().toUpperCase();
+
+  q.opciones.forEach(opcion => {
+    const btn = document.createElement('button');
+    btn.className = 'opcion';
+    btn.textContent = opcion;
+    const letraOpcion = opcion.charAt(0).toUpperCase();
+
+    if (guardada) {
+      btn.disabled = true;
+      if (letraOpcion === letraCorrecta) btn.classList.add('correcta');
+      if (guardada.opcionElegida === opcion && letraOpcion !== letraCorrecta) btn.classList.add('incorrecta');
+    } else {
+      btn.onclick = () => seleccionarRespuesta(btn, opcion, letraOpcion, letraCorrecta);
+    }
+    cardOptions.appendChild(btn);
+  });
+
+  if (guardada) { cardExplanation.classList.add('visible'); btnNext.disabled = false; }
+  else btnNext.disabled = true;
+  btnPrev.disabled = indiceActual === 0;
+  btnNext.textContent = (indiceActual === preguntasActivas.length - 1) ? '🏁 Finalizar' : 'Siguiente ➡️';
+}
+
+function seleccionarRespuesta(btnElegido, opcionTexto, letraOpcion, letraCorrecta) {
+  const esCorrecta = (letraOpcion === letraCorrecta);
+  respuestasUsuario[indiceActual] = { opcionElegida: opcionTexto, esCorrecta };
+
+  cardOptions.querySelectorAll('.opcion').forEach(b => {
+    b.disabled = true;
+    const l = b.textContent.charAt(0).toUpperCase();
+    if (l === letraCorrecta) b.classList.add('correcta');
+    if (b === btnElegido && !esCorrecta) b.classList.add('incorrecta');
+  });
+
+  cardExplanation.classList.add('visible');
+  btnNext.disabled = false;
+
+  const aciertos = Object.values(respuestasUsuario).filter(r => r.esCorrecta).length;
+  statScore.textContent = `✅ Aciertos: ${aciertos}`;
+}
+
+function siguientePregunta() {
+  if (indiceActual < preguntasActivas.length - 1) {
+    indiceActual++;
+    cargarPregunta();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    mostrarResultados();
+  }
+}
+
+function preguntaAnterior() {
+  if (indiceActual > 0) {
+    indiceActual--;
+    cargarPregunta();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function mostrarResultados() {
+  quizHeader.style.display = 'none';
+  progressEl.style.display = 'none';
+  quizContainer.style.display = 'none';
+
+  const total = preguntasActivas.length;
+  const aciertos = Object.values(respuestasUsuario).filter(r => r.esCorrecta).length;
+  const pct = Math.round((aciertos / total) * 100);
+
+  document.getElementById('final-score-circle').textContent = pct + '%';
+  let msg = `Has acertado ${aciertos} de ${total} preguntas.`;
+  if (pct === 100) msg += ' ¡Perfecto! 🏆';
+  else if (pct >= 70) msg += ' ¡Buen trabajo! 👍';
+  else if (pct >= 50) msg += ' Puedes mejorar. 💪';
+  else msg += ' Sigue practicando. 📚';
+  document.getElementById('final-message').textContent = msg;
+
+  resultsScreen.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==================== MODO LISTA ====================
+function mostrarLista() {
+  const cat = document.getElementById('cat-lista').value;
+  const preguntas = filtrarPreguntas(cat);
+  if (preguntas.length === 0) { alert('No hay preguntas en esta categoría.'); return; }
+
+  setupPanel.style.display = 'none';
+  quizContainer.style.display = 'none';
+  quizHeader.style.display = 'none';
+  progressEl.style.display = 'none';
+  resultsScreen.style.display = 'none';
+
+  let titulo = '📋 Lista de estudio';
+  if (cat === 'practicas') titulo = '🎓 Preguntas de Classroom';
+  else if (cat === 'test80') titulo = '📖 Test Oficiales';
+  else if (cat === 'todas') titulo = '📋 Todas las preguntas';
+
+  renderizarLista(preguntas, titulo);
+  listContainer.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderizarLista(preguntas, titulo) {
+  const listEl = document.getElementById('study-list');
+  listEl.innerHTML = '';
+
+  document.getElementById('list-counter').textContent = `${titulo} · ${preguntas.length} preguntas`;
+
+  preguntas.forEach((q, i) => {
+    const letraCorrecta = (q.respuesta_correcta || '').trim().toUpperCase();
+    const card = document.createElement('div');
+    card.className = 'study-card ' + COLORES[i % COLORES.length];
+
+    const opcionesHTML = q.opciones.map(op => {
+      const letra = op.charAt(0).toUpperCase();
+      const esCorrecta = letra === letraCorrecta;
+      return `<div class="opcion-estudio${esCorrecta ? ' correcta' : ''}">${op}</div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div>
+        <span class="num">#${q.id}</span>
+        <span class="tema-tag">${q.tema}</span>
+      </div>
+      <div class="pregunta">${q.pregunta}</div>
+      <div>${opcionesHTML}</div>
+      <div class="expl">${q.explicacion || ''}</div>
+    `;
+    listEl.appendChild(card);
+  });
+}
+
+// ==================== VOLVER ====================
+function reiniciarSetup() {
+  resultsScreen.style.display = 'none';
+  listContainer.style.display = 'none';
+  quizContainer.style.display = 'none';
+  quizHeader.style.display = 'none';
+  progressEl.style.display = 'none';
+  setupPanel.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
