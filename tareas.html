@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tareas · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 4px; }
+        .custom-scrollbar-main::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .countdown-number {
+            text-shadow: 0 0 30px rgba(99, 102, 241, 0.25);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 4, 0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .loading-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #64748b;
+            padding: 4px 10px;
+            background: rgba(13, 13, 17, 0.8);
+            border: 1px solid rgba(30, 30, 36, 0.8);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl shrink-0">
+        
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <!-- Productividad (Tareas activo) -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-indigo-400"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recursos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Herramientas -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Juegos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sistema -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL: TAREAS SIMPLE -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <!-- Fondo decorativo -->
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/10 via-transparent to-violet-950/10 pointer-events-none"></div>
+        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 min-h-full flex items-center justify-center p-8">
+            
+            <div class="w-full max-w-3xl text-center">
+
+                <!-- Botón ver todas arriba a la derecha (fuera del flujo central) -->
+                <div class="absolute top-6 right-6">
+                    <button onclick="openAllTasksModal()" class="flex items-center gap-2 px-4 py-2 bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all">
+                        <i class="ph ph-list-dashes text-base"></i>
+                        <span>Ver todas</span>
+                    </button>
+                </div>
+
+                <!-- Nombre de la tarea -->
+                <h1 id="nextTaskName" class="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+                    Cargando...
+                </h1>
+
+                <!-- Fecha bonita debajo -->
+                <p id="nextTaskInfo" class="text-xl md:text-3xl font-semibold text-slate-300 tracking-tight capitalize mb-12">
+                    —
+                </p>
+
+                <!-- Contador regresivo -->
+                <div class="grid grid-cols-4 gap-4 md:gap-6">
+                    <div class="flex flex-col items-center">
+                        <div id="cd-days" class="countdown-number text-5xl md:text-7xl font-extrabold text-white leading-none">00</div>
+                        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-500 uppercase mt-3">Días</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="cd-hours" class="countdown-number text-5xl md:text-7xl font-extrabold text-white leading-none">00</div>
+                        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-500 uppercase mt-3">Horas</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="cd-minutes" class="countdown-number text-5xl md:text-7xl font-extrabold text-white leading-none">00</div>
+                        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-500 uppercase mt-3">Minutos</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div id="cd-seconds" class="countdown-number text-5xl md:text-7xl font-extrabold text-indigo-400 leading-none">00</div>
+                        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-500 uppercase mt-3">Segundos</div>
+                    </div>
+                </div>
+
+                <!-- Descripción debajo del contador -->
+                <p id="countdownMessage" class="mt-12 text-sm text-slate-500"></p>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ============ MODAL: Todas las tareas pendientes ============ -->
+    <div id="allTasksModal" class="modal-overlay" onclick="if(event.target===this) closeModal('allTasksModal')">
+        <div class="modal-content bg-[#0a0a0c] border border-slate-800/80 rounded-2xl p-6 shadow-2xl w-full max-w-2xl mx-4">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="ph ph-list-checks text-indigo-400"></i>
+                        Tareas pendientes
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Solo las que aún no han pasado</p>
+                </div>
+                <button onclick="closeModal('allTasksModal')" class="w-8 h-8 rounded-lg bg-slate-900/60 hover:bg-slate-800/80 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div id="modalAllTasksList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== DATOS ==========
+        let tasks = [];
+        let nextTask = null;
+        let countdownInterval = null;
+
+        const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+        // ========== PARSEAR fechas.txt ==========
+        function parseEventsFile(text) {
+            const lines = text.split('\n');
+            const parsed = [];
+
+            lines.forEach((line) => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return;
+
+                const parts = trimmed.split(/\s+/);
+                if (parts.length < 5) return;
+
+                const [dateRaw, name, color, timeRaw, ...descParts] = parts;
+                const description = descParts.join(' ');
+
+                const dateMatch = dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (!dateMatch) return;
+
+                const [, day, month, year] = dateMatch;
+                const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+                let cleanColor = color.startsWith('#') ? color : '#' + color;
+                if (!/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(cleanColor)) {
+                    cleanColor = '#6366f1';
+                }
+
+                const startHourMinute = parseStartTime(timeRaw);
+
+                const prettyName = name.replace(/_/g, ' ');
+                const prettyTime = timeRaw.replace(/_/g, ' ');
+                const prettyDesc = description.replace(/_/g, ' ');
+
+                const startDate = new Date(year, month - 1, day, startHourMinute.h, startHourMinute.m, 0);
+
+                parsed.push({
+                    date,
+                    name: prettyName,
+                    color: cleanColor,
+                    time: prettyTime,
+                    description: prettyDesc,
+                    timestamp: startDate.getTime()
+                });
+            });
+
+            return parsed;
+        }
+
+        function parseStartTime(timeStr) {
+            let start = timeStr.split(/[-–—]/)[0].trim();
+            const ampm = start.match(/(am|pm|a\.m\.|p\.m\.)/i);
+            let isPM = false;
+            let isAM = false;
+            if (ampm) {
+                const marker = ampm[1].toLowerCase();
+                if (marker.startsWith('p')) isPM = true;
+                if (marker.startsWith('a')) isAM = true;
+                start = start.replace(/(am|pm|a\.m\.|p\.m\.)/i, '').trim();
+            }
+            const match = start.match(/(\d{1,2})[:.](\d{2})/);
+            if (!match) return { h: 8, m: 0 };
+            let h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            if (isPM && h < 12) h += 12;
+            if (isAM && h === 12) h = 0;
+            return { h, m };
+        }
+
+        // ========== CARGAR fechas.txt ==========
+        async function loadTasks() {
+            try {
+                const response = await fetch('fechas.txt');
+                if (!response.ok) throw new Error('No se encontró fechas.txt');
+                const text = await response.text();
+                tasks = parseEventsFile(text);
+            } catch (err) {
+                tasks = [];
+            }
+
+            const now = Date.now();
+            const pending = tasks.filter(t => t.timestamp > now).sort((a, b) => a.timestamp - b.timestamp);
+            nextTask = pending.length > 0 ? pending[0] : null;
+
+            renderNextTask();
+            startCountdown();
+        }
+
+        // ========== RENDERIZAR SIGUIENTE TAREA ==========
+        function renderNextTask() {
+            const nameEl = document.getElementById('nextTaskName');
+            const infoEl = document.getElementById('nextTaskInfo');
+            const msgEl = document.getElementById('countdownMessage');
+
+            if (!nextTask) {
+                nameEl.textContent = 'Sin tareas pendientes';
+                nameEl.style.color = '';
+                infoEl.textContent = 'No hay tareas próximas';
+                msgEl.textContent = '';
+                return;
+            }
+
+            nameEl.textContent = nextTask.name;
+            nameEl.style.color = nextTask.color;
+
+            const [y, m, d] = nextTask.date.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dayName = dayNames[dateObj.getDay()];
+
+            infoEl.textContent = `${dayName}, ${d} de ${monthNames[m-1]} de ${y} · ${nextTask.time}`;
+            infoEl.style.color = '';
+            msgEl.textContent = nextTask.description;
+        }
+
+        // ========== CONTADOR REGRESIVO ==========
+        function startCountdown() {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            function tick() {
+                if (!nextTask) {
+                    document.getElementById('cd-days').textContent = '00';
+                    document.getElementById('cd-hours').textContent = '00';
+                    document.getElementById('cd-minutes').textContent = '00';
+                    document.getElementById('cd-seconds').textContent = '00';
+                    return;
+                }
+
+                const now = Date.now();
+                let diff = nextTask.timestamp - now;
+
+                if (diff <= 0) {
+                    const pending = tasks.filter(t => t.timestamp > now).sort((a, b) => a.timestamp - b.timestamp);
+                    nextTask = pending.length > 0 ? pending[0] : null;
+                    renderNextTask();
+                    if (!nextTask) {
+                        clearInterval(countdownInterval);
+                        return;
+                    }
+                    diff = nextTask.timestamp - now;
+                }
+
+                const totalSeconds = Math.floor(diff / 1000);
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+                document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('cd-minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('cd-seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            tick();
+            countdownInterval = setInterval(tick, 1000);
+        }
+
+        // ========== MODAL ==========
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal('allTasksModal');
+        });
+
+        function openAllTasksModal() {
+            const list = document.getElementById('modalAllTasksList');
+            const now = Date.now();
+            const pending = tasks.filter(t => t.timestamp > now).sort((a, b) => a.timestamp - b.timestamp);
+
+            if (pending.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="ph ph-check-circle text-4xl text-emerald-700 mb-2"></i>
+                        <p class="text-sm text-slate-500 italic">No hay tareas pendientes.</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = pending.map(t => {
+                    const [y, m, d] = t.date.split('-').map(Number);
+                    const dateObj = new Date(y, m - 1, d);
+                    const dayName = dayNames[dateObj.getDay()];
+
+                    const diff = t.timestamp - now;
+                    const totalSeconds = Math.floor(diff / 1000);
+                    const dd = Math.floor(totalSeconds / 86400);
+                    const hh = Math.floor((totalSeconds % 86400) / 3600);
+                    const mm = Math.floor((totalSeconds % 3600) / 60);
+                    let remaining = '';
+                    if (dd > 0) remaining = `${dd}d ${hh}h`;
+                    else if (hh > 0) remaining = `${hh}h ${mm}m`;
+                    else remaining = `${mm}m`;
+
+                    return `
+                        <div class="flex items-center gap-3 p-4 rounded-xl border" style="background-color: ${t.color}08; border-color: ${t.color}30;">
+                            <div class="w-1 self-stretch rounded-full" style="background-color: ${t.color};"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <p class="text-sm font-bold" style="color: ${t.color};">${t.name}</p>
+                                    <span class="text-[11px] font-semibold text-slate-400 whitespace-nowrap">${t.time}</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mb-1">${t.description}</p>
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">${dayName}, ${d} de ${monthNames[m-1]} de ${y}</p>
+                                    <span class="text-[10px] font-bold text-indigo-400">⏱ ${remaining}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            openModal('allTasksModal');
+        }
+
+        // ========== INICIALIZAR ==========
+        loadTasks();
+    </script>
+
+</body>
+</html>

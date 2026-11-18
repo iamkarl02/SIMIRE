@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 4px; }
+        .custom-scrollbar-main::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .day-cell {
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .day-cell:hover {
+            background-color: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.35);
+        }
+        .day-cell.today {
+            background-color: rgba(99, 102, 241, 0.10);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        .day-cell.other-month {
+            opacity: 0.35;
+        }
+
+        .event-pill {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+            margin-top: 1px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 4, 0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #1e1e24; border-radius: 6px; }
+
+        .loading-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #64748b;
+            padding: 4px 10px;
+            background: rgba(13, 13, 17, 0.8);
+            border: 1px solid rgba(30, 30, 36, 0.8);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl shrink-0">
+        
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <!-- Productividad (Calendario activo) -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-indigo-400"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recursos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Herramientas -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Juegos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sistema -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL: CALENDARIO CENTRADO -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar-main relative">
+        
+        <div class="fixed inset-0 bg-gradient-to-br from-indigo-950/10 via-transparent to-violet-950/10 pointer-events-none"></div>
+
+        <div class="relative z-10 min-h-full flex items-center justify-center p-8">
+            
+            <div class="w-full max-w-5xl">
+
+                <!-- Cabecera -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                            <i class="ph ph-calendar text-indigo-400"></i>
+                            Calendario
+                        </h2>
+                        <div class="flex items-center gap-3 mt-2">
+                            <p class="text-slate-400 text-sm">Exámenes y eventos importantes del curso</p>
+                            <span id="dataSourceBadge" class="loading-badge">
+                                <i class="ph ph-spinner-gap animate-spin"></i>
+                                Cargando fechas.txt...
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="openAllEventsModal()" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 hover:border-indigo-400/60 rounded-xl text-sm font-semibold text-indigo-300 transition-all">
+                        <i class="ph ph-list-dashes text-lg"></i>
+                        <span>Ver todos los eventos</span>
+                    </button>
+                </div>
+
+                <!-- Navegación mes -->
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                        <i class="ph ph-caret-left text-lg"></i>
+                    </button>
+                    <h3 id="monthYear" class="text-xl font-bold text-white tracking-wide">Septiembre 2026</h3>
+                    <button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl bg-[#0d0d11]/60 border border-slate-900/60 hover:border-indigo-500/40 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                        <i class="ph ph-caret-right text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Días de la semana -->
+                <div class="grid grid-cols-7 gap-2 mb-2">
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Lun</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Mar</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Mié</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Jue</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Vie</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Sáb</div>
+                    <div class="text-center text-[11px] font-bold tracking-widest text-slate-500 uppercase py-2">Dom</div>
+                </div>
+
+                <!-- Grid del calendario -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+                    <!-- Se rellena con JS -->
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- ============ MODAL: Eventos del día ============ -->
+    <div id="dayModal" class="modal-overlay" onclick="if(event.target===this) closeModal('dayModal')">
+        <div class="modal-content bg-[#0a0a0c] border border-slate-800/80 rounded-2xl p-6 shadow-2xl w-full max-w-lg mx-4">
+            <div class="flex items-center justify-between mb-5">
+                <h3 id="modalDateTitle" class="text-lg font-bold text-white"></h3>
+                <button onclick="closeModal('dayModal')" class="w-8 h-8 rounded-lg bg-slate-900/60 hover:bg-slate-800/80 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div id="modalDayEventsList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: Todos los eventos ============ -->
+    <div id="allEventsModal" class="modal-overlay" onclick="if(event.target===this) closeModal('allEventsModal')">
+        <div class="modal-content bg-[#0a0a0c] border border-slate-800/80 rounded-2xl p-6 shadow-2xl w-full max-w-2xl mx-4">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="ph ph-calendar-check text-indigo-400"></i>
+                        Todos los eventos del curso
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Ordenados cronológicamente</p>
+                </div>
+                <button onclick="closeModal('allEventsModal')" class="w-8 h-8 rounded-lg bg-slate-900/60 hover:bg-slate-800/80 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div id="modalAllEventsList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== DATOS DE EVENTOS (vacío por defecto) ==========
+        let events = [];
+
+        // ========== PARSEAR fechas.txt ==========
+        // Formato: fecha nombre color hora descripcion
+        // Ejemplo: 29/09/2026 Examen_Aplicaciones_Ofimáticas #8b5cf6 8:30-11:00 Examen_UD1_AO_Edición_de_imagen
+        function parseEventsFile(text) {
+            const lines = text.split('\n');
+            const parsed = [];
+
+            lines.forEach((line, idx) => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) return; // Ignorar vacías y comentarios
+
+                const parts = trimmed.split(/\s+/);
+                if (parts.length < 5) {
+                    console.warn(`Línea ${idx + 1} ignorada (formato incorrecto):`, trimmed);
+                    return;
+                }
+
+                const [dateRaw, name, color, time, ...descParts] = parts;
+                const description = descParts.join(' ');
+
+                // Convertir fecha DD/MM/YYYY → YYYY-MM-DD
+                const dateMatch = dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (!dateMatch) {
+                    console.warn(`Línea ${idx + 1} ignorada (fecha inválida):`, dateRaw);
+                    return;
+                }
+
+                const [, day, month, year] = dateMatch;
+                const date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+                // Verificar color hexadecimal
+                let cleanColor = color.startsWith('#') ? color : '#' + color;
+                if (!/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(cleanColor)) {
+                    cleanColor = '#6366f1';
+                }
+
+                const prettyName = name.replace(/_/g, ' ');
+                const prettyDesc = description.replace(/_/g, ' ');
+
+                parsed.push({
+                    date,
+                    name: prettyName,
+                    color: cleanColor,
+                    time,
+                    description: prettyDesc
+                });
+            });
+
+            return parsed;
+        }
+
+        // ========== CARGAR fechas.txt ==========
+        async function loadEvents() {
+            const badge = document.getElementById('dataSourceBadge');
+
+            try {
+                const response = await fetch('fechas.txt');
+                if (!response.ok) throw new Error('No se encontró fechas.txt');
+
+                const text = await response.text();
+                const parsed = parseEventsFile(text);
+
+                events = parsed; // Puede estar vacío, y así se queda
+
+                if (parsed.length === 0) {
+                    badge.innerHTML = `<i class="ph ph-info text-slate-400"></i> fechas.txt sin eventos`;
+                    badge.style.color = '#94a3b8';
+                } else {
+                    badge.innerHTML = `<i class="ph ph-check-circle text-emerald-400"></i> Cargado desde fechas.txt (${parsed.length} eventos)`;
+                    badge.style.color = '#6ee7b7';
+                }
+            } catch (err) {
+                // Sin fallback: el calendario se queda vacío
+                events = [];
+                badge.innerHTML = `<i class="ph ph-warning-circle text-amber-400"></i> fechas.txt no disponible`;
+                badge.style.color = '#fcd34d';
+            }
+
+            renderCalendar();
+        }
+
+        // ========== ESTADO DEL CALENDARIO ==========
+        let currentDate = new Date(2026, 8, 1);
+
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+        // ========== RENDERIZAR CALENDARIO ==========
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+
+            let startDay = firstDay.getDay();
+            startDay = (startDay === 0) ? 6 : startDay - 1;
+
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+            for (let i = 0; i < 42; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'day-cell bg-[#0d0d11]/60 border border-slate-900/60 rounded-xl p-2 min-h-[90px] flex flex-col';
+
+                let dayNumber, cellDate, isOtherMonth = false;
+
+                if (i < startDay) {
+                    dayNumber = prevMonthLastDay - startDay + i + 1;
+                    cellDate = new Date(year, month - 1, dayNumber);
+                    isOtherMonth = true;
+                } else if (i >= startDay + daysInMonth) {
+                    dayNumber = i - startDay - daysInMonth + 1;
+                    cellDate = new Date(year, month + 1, dayNumber);
+                    isOtherMonth = true;
+                } else {
+                    dayNumber = i - startDay + 1;
+                    cellDate = new Date(year, month, dayNumber);
+                }
+
+                const dateStr = `${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+
+                if (isOtherMonth) cell.classList.add('other-month');
+                if (dateStr === todayStr) cell.classList.add('today');
+
+                const dayNumEl = document.createElement('div');
+                dayNumEl.className = `text-sm font-bold ${isOtherMonth ? 'text-slate-600' : (dateStr === todayStr ? 'text-indigo-300' : 'text-slate-300')}`;
+                dayNumEl.textContent = dayNumber;
+                cell.appendChild(dayNumEl);
+
+                const dayEvents = events.filter(e => e.date === dateStr);
+                dayEvents.slice(0, 3).forEach(ev => {
+                    const pill = document.createElement('div');
+                    pill.className = 'event-pill';
+                    pill.style.backgroundColor = ev.color + '30';
+                    pill.style.color = ev.color;
+                    pill.style.borderLeft = `2px solid ${ev.color}`;
+                    pill.textContent = ev.name;
+                    cell.appendChild(pill);
+                });
+                if (dayEvents.length > 3) {
+                    const more = document.createElement('div');
+                    more.className = 'text-[9px] text-slate-500 mt-0.5 pl-1';
+                    more.textContent = `+${dayEvents.length - 3} más`;
+                    cell.appendChild(more);
+                }
+
+                cell.onclick = () => openDayModal(dateStr);
+                grid.appendChild(cell);
+            }
+        }
+
+        // ========== NAVEGACIÓN DE MES ==========
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // ========== MODALES ==========
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal('dayModal');
+                closeModal('allEventsModal');
+            }
+        });
+
+        // ========== MODAL: Eventos del día ==========
+        function openDayModal(dateStr) {
+            const dayEvents = events.filter(e => e.date === dateStr);
+            const title = document.getElementById('modalDateTitle');
+            const list = document.getElementById('modalDayEventsList');
+
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dayName = dayNames[dateObj.getDay()];
+
+            title.textContent = `${dayName}, ${d} de ${monthNames[m-1]} de ${y}`;
+
+            if (dayEvents.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="ph ph-calendar-x text-4xl text-slate-700 mb-2"></i>
+                        <p class="text-sm text-slate-500 italic">No hay eventos este día.</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = dayEvents.map(ev => `
+                    <div class="flex items-start gap-3 p-4 rounded-xl border" style="background-color: ${ev.color}10; border-color: ${ev.color}40;">
+                        <div class="w-1 self-stretch rounded-full" style="background-color: ${ev.color};"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <p class="text-sm font-bold" style="color: ${ev.color};">${ev.name}</p>
+                                <span class="text-[11px] font-semibold text-slate-400 whitespace-nowrap">${ev.time}</span>
+                            </div>
+                            <p class="text-xs text-slate-400">${ev.description}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            openModal('dayModal');
+        }
+
+        // ========== MODAL: Todos los eventos ==========
+        function openAllEventsModal() {
+            const list = document.getElementById('modalAllEventsList');
+            const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+
+            if (sorted.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="ph ph-calendar-x text-4xl text-slate-700 mb-2"></i>
+                        <p class="text-sm text-slate-500 italic">No hay eventos disponibles.</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = sorted.map(ev => {
+                    const [y, m, d] = ev.date.split('-').map(Number);
+                    const dateObj = new Date(y, m - 1, d);
+                    const dayName = dayNames[dateObj.getDay()];
+                    return `
+                        <div class="flex items-center gap-3 p-4 rounded-xl border" style="background-color: ${ev.color}08; border-color: ${ev.color}30;">
+                            <div class="w-1 self-stretch rounded-full" style="background-color: ${ev.color};"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <p class="text-sm font-bold" style="color: ${ev.color};">${ev.name}</p>
+                                    <span class="text-[11px] font-semibold text-slate-400 whitespace-nowrap">${ev.time}</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mb-1">${ev.description}</p>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">${dayName}, ${d} de ${monthNames[m-1]} de ${y}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            openModal('allEventsModal');
+        }
+
+        // ========== INICIALIZAR ==========
+        renderCalendar(); // Se renderiza vacío primero
+        loadEvents();      // Y luego carga fechas.txt
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora · SIMIRE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030304;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e1e24;
+            border-radius: 4px;
+        }
+        .calc-btn {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+        }
+        .display-glow {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-[#030304] text-slate-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 bg-[#0a0a0c] border-r border-slate-900/80 flex flex-col justify-between h-full select-none z-20 shadow-2xl">
+        
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-slate-900/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="ph-bold ph-desktop text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm tracking-wider text-white leading-tight">SIMIRE</h1>
+                    <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Sistemas Microinformáticos y Redes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-3 py-3 space-y-2.5 custom-scrollbar">
+            
+            <!-- Productividad -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-prod')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-check-square text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Productividad</span>
+                    </div>
+                    <i id="icon-cat-prod" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-prod" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="horario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="horario">
+                        <i class="ph ph-calendar-blank text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Horario</span>
+                    </a>
+                    <a href="calendario.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="calendario">
+                        <i class="ph ph-calendar text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Calendario</span>
+                    </a>
+                    <a href="tareas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="tareas">
+                        <i class="ph ph-list-checks text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Tareas</span>
+                    </a>
+                    <a href="reloj.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="reloj">
+                        <i class="ph ph-clock text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Reloj</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recursos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-recursos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-link text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Recursos</span>
+                    </div>
+                    <i id="icon-cat-recursos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-recursos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sitios.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sitios">
+                        <i class="ph ph-globe text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sitios de clase</span>
+                    </a>
+                    <a href="enlaces.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="enlaces">
+                        <i class="ph ph-share-network text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Enlaces</span>
+                    </a>
+                    <a href="mecanografia.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="mecanografia">
+                        <i class="ph ph-keyboard text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Mecanografía</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Herramientas (con Calculadora activa) -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-herramientas')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Herramientas</span>
+                    </div>
+                    <i id="icon-cat-herramientas" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200 rotate-180"></i>
+                </button>
+                <div id="cat-herramientas" class="px-1.5 pb-1.5 space-y-0.5 block">
+                    <a href="calculadora.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-300 group active-item bg-gradient-to-r from-indigo-600/20 to-transparent text-white font-medium border-l-2 border-indigo-500 shadow-sm" data-id="calculadora">
+                        <i class="ph ph-calculator text-sm text-indigo-400"></i>
+                        <span class="text-xs">Calculadora</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Juegos -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-juegos')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-joystick text-sm text-purple-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Juegos</span>
+                    </div>
+                    <i id="icon-cat-juegos" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-juegos" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="sudoku.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="sudoku">
+                        <i class="ph ph-hash text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Sudoku</span>
+                    </a>
+                    <a href="buscaminas.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="buscaminas">
+                        <i class="ph ph-bomb text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Buscaminas</span>
+                    </a>
+                    <a href="wordle.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="wordle">
+                        <i class="ph ph-text-aa text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Wordle</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sistema -->
+            <div class="rounded-lg overflow-hidden bg-[#0d0d11]/60 border border-slate-900/40">
+                <button onclick="toggleCategory('cat-sistema')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left focus:outline-none transition-colors">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-gear text-sm text-indigo-400"></i>
+                        <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Sistema</span>
+                    </div>
+                    <i id="icon-cat-sistema" class="ph ph-caret-down text-slate-500 text-[10px] transition-transform duration-200"></i>
+                </button>
+                <div id="cat-sistema" class="px-1.5 pb-1.5 space-y-0.5 hidden">
+                    <a href="configuracion.html" onclick="selectItem(this, event)" class="sidebar-item flex items-center gap-2.5 px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 group border-l-2 border-transparent" data-id="configuracion">
+                        <i class="ph ph-sliders text-sm text-slate-500 group-hover:text-slate-300"></i>
+                        <span class="text-xs">Configuración</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-2 border-t border-slate-900/40"></div>
+
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL: CALCULADORA -->
+    <main class="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+        
+        <!-- Fondo decorativo -->
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-950/20 via-transparent to-violet-950/20 pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Calculadora -->
+        <div class="relative z-10 w-full max-w-md bg-[#0a0a0c] border border-slate-900/80 rounded-2xl shadow-2xl overflow-hidden">
+            
+            <!-- Pantalla -->
+            <div class="px-6 pt-6 pb-4 bg-[#0d0d11]/60 border-b border-slate-900/60">
+                <div id="history" class="text-right text-sm text-slate-500 h-6 truncate font-medium"></div>
+                <div id="display" class="display-glow text-right text-5xl md:text-6xl font-extrabold text-white tracking-tight truncate py-2">
+                    0
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="p-4 grid grid-cols-4 gap-2.5">
+                
+                <!-- Fila 1 -->
+                <button onclick="clearAll()" class="calc-btn h-16 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-rose-400 font-bold text-lg border border-slate-700/40">AC</button>
+                <button onclick="deleteLast()" class="calc-btn h-16 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-indigo-300 font-bold text-lg border border-slate-700/40">
+                    <i class="ph ph-backspace"></i>
+                </button>
+                <button onclick="appendOperator('%')" class="calc-btn h-16 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-indigo-300 font-bold text-lg border border-slate-700/40">%</button>
+                <button onclick="appendOperator('/')" class="calc-btn h-16 rounded-xl bg-indigo-600/80 hover:bg-indigo-500/80 text-white font-bold text-xl border border-indigo-500/40">÷</button>
+
+                <!-- Fila 2 -->
+                <button onclick="appendNumber('7')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">7</button>
+                <button onclick="appendNumber('8')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">8</button>
+                <button onclick="appendNumber('9')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">9</button>
+                <button onclick="appendOperator('*')" class="calc-btn h-16 rounded-xl bg-indigo-600/80 hover:bg-indigo-500/80 text-white font-bold text-xl border border-indigo-500/40">×</button>
+
+                <!-- Fila 3 -->
+                <button onclick="appendNumber('4')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">4</button>
+                <button onclick="appendNumber('5')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">5</button>
+                <button onclick="appendNumber('6')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">6</button>
+                <button onclick="appendOperator('-')" class="calc-btn h-16 rounded-xl bg-indigo-600/80 hover:bg-indigo-500/80 text-white font-bold text-xl border border-indigo-500/40">−</button>
+
+                <!-- Fila 4 -->
+                <button onclick="appendNumber('1')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">1</button>
+                <button onclick="appendNumber('2')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">2</button>
+                <button onclick="appendNumber('3')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">3</button>
+                <button onclick="appendOperator('+')" class="calc-btn h-16 rounded-xl bg-indigo-600/80 hover:bg-indigo-500/80 text-white font-bold text-xl border border-indigo-500/40">+</button>
+
+                <!-- Fila 5 -->
+                <button onclick="appendNumber('0')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60 col-span-2">0</button>
+                <button onclick="appendNumber('.')" class="calc-btn h-16 rounded-xl bg-[#131318] hover:bg-[#1a1a20] text-white font-semibold text-xl border border-slate-800/60">.</button>
+                <button onclick="calculate()" class="calc-btn h-16 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 hover:from-indigo-500 hover:to-violet-400 text-white font-bold text-2xl border border-indigo-400/40 shadow-lg shadow-indigo-500/20">=</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ========== FUNCIONES DEL SIDEBAR ==========
+        function toggleCategory(categoryId) {
+            const content = document.getElementById(categoryId);
+            const icon = document.getElementById('icon-' + categoryId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function selectItem(element, event) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(item => {
+                item.classList.remove('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+                item.classList.add('border-transparent', 'text-slate-400');
+                const icon = item.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('text-indigo-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
+            element.classList.remove('border-transparent', 'text-slate-400');
+            element.classList.add('bg-gradient-to-r', 'from-indigo-600/20', 'to-transparent', 'text-white', 'font-medium', 'border-indigo-500', 'shadow-sm');
+            const activeIcon = element.querySelector('i');
+            if (activeIcon) {
+                activeIcon.classList.remove('text-slate-500', 'group-hover:text-slate-300');
+                activeIcon.classList.add('text-indigo-400');
+            }
+        }
+
+        // ========== LÓGICA DE LA CALCULADORA ==========
+        let currentInput = '0';
+        let previousInput = '';
+        let operator = null;
+        let shouldResetDisplay = false;
+
+        const displayEl = document.getElementById('display');
+        const historyEl = document.getElementById('history');
+
+        function updateDisplay() {
+            // Formatear el número para que no sea demasiado largo
+            let displayValue = currentInput;
+            if (displayValue.length > 12 && !displayValue.includes('e')) {
+                const num = parseFloat(displayValue);
+                if (!isNaN(num)) {
+                    displayValue = num.toPrecision(10).replace(/\.?0+$/, '');
+                }
+            }
+            displayEl.textContent = displayValue;
+        }
+
+        function updateHistory() {
+            if (operator && previousInput) {
+                const opSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷', '%': '%' }[operator] || operator;
+                historyEl.textContent = `${previousInput} ${opSymbol}`;
+            } else {
+                historyEl.textContent = '';
+            }
+        }
+
+        function appendNumber(num) {
+            if (shouldResetDisplay) {
+                currentInput = '0';
+                shouldResetDisplay = false;
+            }
+
+            if (num === '.') {
+                if (currentInput.includes('.')) return;
+                if (currentInput === '') currentInput = '0';
+            }
+
+            if (currentInput === '0' && num !== '.') {
+                currentInput = num;
+            } else {
+                currentInput += num;
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (operator && !shouldResetDisplay) {
+                calculate();
+            }
+            previousInput = currentInput;
+            operator = op;
+            shouldResetDisplay = true;
+            updateHistory();
+        }
+
+        function calculate() {
+            if (!operator || !previousInput) return;
+
+            const prev = parseFloat(previousInput);
+            const curr = parseFloat(currentInput);
+            let result = 0;
+
+            switch (operator) {
+                case '+': result = prev + curr; break;
+                case '-': result = prev - curr; break;
+                case '*': result = prev * curr; break;
+                case '/': 
+                    if (curr === 0) {
+                        currentInput = 'Error';
+                        updateDisplay();
+                        previousInput = '';
+                        operator = null;
+                        shouldResetDisplay = true;
+                        historyEl.textContent = '';
+                        return;
+                    }
+                    result = prev / curr; 
+                    break;
+                case '%': result = prev % curr; break;
+                default: return;
+            }
+
+            // Redondear para evitar errores de coma flotante
+            result = Math.round(result * 1e10) / 1e10;
+
+            currentInput = result.toString();
+            operator = null;
+            previousInput = '';
+            shouldResetDisplay = true;
+            updateDisplay();
+            historyEl.textContent = '';
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operator = null;
+            shouldResetDisplay = false;
+            updateDisplay();
+            historyEl.textContent = '';
+        }
+
+        function deleteLast() {
+            if (shouldResetDisplay || currentInput === 'Error') {
+                clearAll();
+                return;
+            }
+            if (currentInput.length === 1) {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        // ========== SOPORTE DE TECLADO ==========
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (/^[0-9]$/.test(key)) {
+                appendNumber(key);
+            } else if (key === '.') {
+                appendNumber('.');
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                appendOperator(key);
+            } else if (key === '%') {
+                appendOperator('%');
+            } else if (key === 'Enter' || key === '=') {
+                e.preventDefault();
+                calculate();
+            } else if (key === 'Backspace') {
+                deleteLast();
+            } else if (key === 'Escape') {
+                clearAll();
+            }
+        });
+
+        // Inicializar
+        updateDisplay();
+    </script>
+
+</body>
+</html>
